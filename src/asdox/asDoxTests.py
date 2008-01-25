@@ -41,6 +41,29 @@ class BaseDefinitionTestCase(unittest.TestCase):
 		self.assertEqual(result.modifiers,expected.modifiers)
 		self.assertEqual(result.includes,expected.includes)
 		self.assertEqual(result.isInterface(),expected.isInterface())
+	def metaTest(self,result,expected):
+		self.assertEqual(result.name,expected.name)
+		self.assertEqual(result.attributes,expected.attributes)
+class ClassDefinitionTestCase(BaseDefinitionTestCase):
+	def testClassMetaData(self):
+		source = """
+		[Bindable]
+		[Event(name="myEnableEvent", type="flash.events.Event")]
+		public class MyClass
+		{
+		}
+		"""
+		
+		result = self.builder.parseString(source)
+		expected = asModel.ClassDef("MyClass")
+		expected.modifiers.add("public")
+		expected.metadata.append( asModel.MetaDataDef("Bindable") )
+		event = asModel.MetaDataDef("Event")
+		event = {"name":"myEnableEvent","type":"flash.events.Event"}
+		expected.metadata.append( event )
+		self.assertEqual(len(result),1)
+		self.metaTest(result[0].metadata[0],expected.metadata[0])
+		self.metaTest(result[0].metadata[1],expected.metadata[1])
 class PackageDefinitionTestCase(BaseDefinitionTestCase):
 	
 	def testDefaultPackage(self):
