@@ -49,6 +49,7 @@ class ClassDefinitionTestCase(BaseDefinitionTestCase):
 		source = """
 		[Bindable]
 		[Event(name="myEnableEvent", type="flash.events.Event")]
+		[Test(true)]
 		public class MyClass
 		{
 		}
@@ -59,11 +60,14 @@ class ClassDefinitionTestCase(BaseDefinitionTestCase):
 		expected.modifiers.add("public")
 		expected.metadata.append( asModel.MetaDataDef("Bindable") )
 		event = asModel.MetaDataDef("Event")
-		event = {"name":"myEnableEvent","type":"flash.events.Event"}
+		event.attributes = {0:True,"name":"myEnableEvent","type":"flash.events.Event"}
 		expected.metadata.append( event )
 		self.assertEqual(len(result),1)
+		self.clsTest(result[0],expected)
+		self.assertEqual(len(result[0].metadata),3)
 		self.metaTest(result[0].metadata[0],expected.metadata[0])
 		self.metaTest(result[0].metadata[1],expected.metadata[1])
+		self.metaTest(result[0].metadata[2],expected.metadata[2])
 class PackageDefinitionTestCase(BaseDefinitionTestCase):
 	
 	def testDefaultPackage(self):
