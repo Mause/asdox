@@ -40,7 +40,9 @@ def getClass( s,l,t ):
     if len(t.class_includes) > 0:
     	cls.includes = set(t.class_includes[0])
     if len(t.methods) > 0:
-    	cls.methods = set(t.methods[0])
+    	cls.methods = t.methods[0]
+    if len(t.meta) > 0:
+	cls.metadata = t.meta[0]
     cls.modifiers = set(t.class_modifiers)
     if len(t.class_implements) > 0:
     	cls.implements = set(t.class_implements[0])
@@ -52,12 +54,16 @@ def getMethod( s,l,t ):
     if len(t.modifiers) > 0:
     	fc.modifiers = set(t.modifiers[0])
     if len(t.args) > 0:
-    	fc.arguments = set(t.args)
+    	fc.arguments = st.args
     return fc
 
 def getArgument(s,l,t):
     arg = BaseDef(t.name,t.type)
     return arg
+
+def getMetaData(s,l,t):
+    meta = MetaDataDef(t.name)
+    return meta
     
 COLON,LPARN,RPARN,LCURL,RCURL,EQUAL,SEMI,LSQUARE,RSQUARE = map(Suppress,":(){}=;[]")
 
@@ -102,7 +108,7 @@ type = COLON + (identifier ^ STAR )
 named_attribute = identifier + EQUAL + QuotedString(quoteChar="\"", escChar='\\')
 attribute = identifier ^ QuotedString(quoteChar="\"", escChar='\\') ^ integer
 metadata_attributes = LPARN + delimitedList( attribute ^ named_attribute) + RPARN
-metadata = LSQUARE + identifier + Optional( metadata_attributes ) + RSQUARE
+metadata = (LSQUARE + identifier("name") + Optional( metadata_attributes ) + RSQUARE).setParseAction(getMetaData)
 
 variable_kind = VAR ^ CONST
 variable_init = EQUAL + Optional( QuotedString(quoteChar="\"", escChar='\\') ^ integer )
@@ -131,7 +137,7 @@ class_name = Combine(identifier + ZeroOrMore( DOT + identifier ))
 class_implements = IMPLEMENTS + delimitedList( class_name ).setResultsName("class_implements",listAllMatches="true")
 class_extends = EXTENDS + class_name("extends")
 class_inheritance = Optional( class_extends ) + Optional( class_implements )
-classDef = (ZeroOrMore(metadata) + class_attributes("class_modifiers") + CLASS("type") + class_name("name") + class_inheritance + class_block).setParseAction(getClass)
+classDef = (ZeroOrMore(metadata).setResultsName("meta",listAllMatches="true") + class_attributes("class_modifiers") + CLASS("type") + class_name("name") + class_inheritance + class_block).setParseAction(getClass)
 _interface = Optional( base_attributes ) + INTERFACE + class_name + Optional( class_extends ) + LCURL + ZeroOrMore( function_signature ) + RCURL
 
 package_block = LCURL + ZeroOrMore( Group(_import).setResultsName("imports",listAllMatches="true") ^ Group(_include).setResultsName("includes",listAllMatches="true") ^ Group(classDef).setResultsName("class_definitions",listAllMatches="true") ) + RCURL
