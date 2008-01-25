@@ -74,5 +74,6 @@ class ClassDefinitionTestCase(unittest.TestCase):
 		self.assertEqual(cls.isPublic(),True)
 		self.assertEqual(cls.isDynamic(),True)
 		self.assertEqual(cls.isFinal(),True)
+		
 if __name__ == "__main__":
 	unittest.main()

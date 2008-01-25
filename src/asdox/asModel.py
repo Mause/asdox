@@ -32,22 +32,29 @@ class BaseDef:
 	def __init__(self,name,type):
 		self.name = name
 		self.type = type
+class ObjectDef:
+	modifiers = set()
+	metadata = list()
 	def hasModifier(self,mod):
 		return mod in self.modifiers
-
+class MetaDataDef(BaseDef):
+	"MetaData Definition"
+	attributes = dict()
+	def __init__(self,name = "",type = "metadata"):
+		self.name = name
+		self.type = type
 class PackageDef(BaseDef):
 	"Package Definition"
 	classes = set()
 	imports = set()
 	includes = set()
 
-class ClassDef(BaseDef):
+class ClassDef(ObjectDef):
 	"Class Definition"
 	variables = set()
 	methods = set()
 	extends = "Object"
 	implements = set()
-	modifiers = set()
 	includes = set()
 	def __init__(self,name = "",type = "class"):
 		self.name = name;
@@ -61,15 +68,13 @@ class ClassDef(BaseDef):
 	def isInterface(self):
 		return self.type == "interface"
 	
-class VariableDef(BaseDef):
+class VariableDef(ObjectDef):
 	"Variable Definition"
-	modifiers = set()
 	def isStatic(self):
 		return self.hasModifer("static")
 	def isConstant(self):
 		pass
 	
-class FunctionDef(BaseDef):
+class FunctionDef(ObjectDef):
 	"Function Definition"
-	modifiers = set()
 	arguments = list()
