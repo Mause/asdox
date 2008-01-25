@@ -49,7 +49,7 @@ class ClassDef(BaseDef):
 	implements = set()
 	modifiers = set()
 	includes = set()
-	def __init__(self,name,type = "class"):
+	def __init__(self,name = "",type = "class"):
 		self.name = name;
 		self.type = type;
 	def isDynamic(self):

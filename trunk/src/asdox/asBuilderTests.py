@@ -24,8 +24,16 @@
 # LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 import unittest,asModel
 class ClassDefinitionTestCase(unittest.TestCase):
+	def testClassContructor(self):
+		cls = asModel.ClassDef();
+		self.assertEqual(cls.name,"")
+		self.assertEqual(cls.type,"class")
+		cls = asModel.ClassDef("ITestable","interface")
+		self.assertEqual(cls.name,"ITestable")
+		self.assertEqual(cls.type,"interface")
 	def testBasicClass(self):
 		cls = asModel.ClassDef("MyClass")
 		self.assertEqual(cls.name,"MyClass")
@@ -41,10 +49,9 @@ class ClassDefinitionTestCase(unittest.TestCase):
 		self.assertEqual(cls.implements,set())
 		self.assertEqual(cls.includes,set())
 	def testBasicInterface(self):
-		cls = asModel.ClassDef("com.gurufaction.TestClass")
-		cls.type = "interface"
+		cls = asModel.ClassDef("com.gurufaction.TestClass","interface")
 		self.assertEqual(cls.name,"com.gurufaction.TestClass")
-		self.assertEqual(cls.type,"interface""Class not of type 'interface'")
+		self.assertEqual(cls.type,"interface","Class not of type 'interface'")
 		self.assertEqual(cls.isInterface(),True,"isInterface() method failed")
 		self.assertEqual(cls.isDynamic(),False)
 		self.assertEqual(cls.isFinal(),False)
@@ -55,5 +62,17 @@ class ClassDefinitionTestCase(unittest.TestCase):
 		self.assertEqual(cls.methods,set())
 		self.assertEqual(cls.implements,set())
 		self.assertEqual(cls.includes,set())
+	def testClassModifiers(self):
+		cls = asModel.ClassDef()
+		cls.modifiers.add("public")
+		cls.modifiers.add("dynamic")
+		cls.modifiers.add("final")
+		self.assertEqual(len(cls.modifiers),3)
+		self.assertEqual(cls.hasModifier("public"),True)
+		self.assertEqual(cls.hasModifier("dynamic"),True)
+		self.assertEqual(cls.hasModifier("final"),True)
+		self.assertEqual(cls.isPublic(),True)
+		self.assertEqual(cls.isDynamic(),True)
+		self.assertEqual(cls.isFinal(),True)
 if __name__ == "__main__":
 	unittest.main()
