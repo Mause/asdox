@@ -24,8 +24,33 @@
 # LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-import asGrammar
+import asGrammar,os,fnmatch
 
-class Builder: 
-	def parseString(self,source):
-		return asGrammar.source.parseString(source)
+class Builder:
+	"Actionscript Source Builder"
+	source = list()
+	model = list()
+	def __init__(self):
+		self.model[:] = []
+		self.source[:] = []
+	def addSource(self,source):
+		try:
+			try:
+				self.source.append( source.read() )
+			except:
+				self.source.append( open(source,"rb").read() )
+		except IOError:
+			if os.path.isdir( source ):
+				files = self.locate("*.as",source)
+				for f in files:
+					self.source.append( open(f).read() )
+			else:
+				self.source.append( source )
+	def parseSource(self):
+		for src in self.source:	
+			self.model.append( asGrammar.source.parseString(src) )
+		return self.model
+	def locate(self,pattern, root=os.getcwd()):
+		for path, dirs, files in os.walk(root):
+			for filename in [os.path.abspath(os.path.join(path, filename)) for filename in files if fnmatch.fnmatch(filename, pattern)]:
+				yield filename
