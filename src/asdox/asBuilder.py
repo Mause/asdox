@@ -47,8 +47,9 @@ class Builder:
 			else:
 				self.source.append( source )
 	def parseSource(self):
-		for src in self.source:	
-			self.model.append( asGrammar.source.parseString(src) )
+		for src in self.source:	 
+			for obj in asGrammar.source.parseString(src):
+				self.model.append( obj )
 		return self.model
 	def locate(self,pattern, root=os.getcwd()):
 		for path, dirs, files in os.walk(root):
