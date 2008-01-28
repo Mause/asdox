@@ -33,7 +33,7 @@ class Builder:
 	def __init__(self):
 		self.model[:] = []
 		self.source[:] = []
-	def addSource(self,source):
+	def addSource(self,source,pattern = "*.as"):
 		try:
 			try:
 				self.source.append( source.read() )
@@ -41,7 +41,7 @@ class Builder:
 				self.source.append( open(source,"rb").read() )
 		except IOError:
 			if os.path.isdir( source ):
-				files = self.locate("*.as",source)
+				files = self.locate(pattern,source)
 				for f in files:
 					self.source.append( open(f).read() )
 			else:
