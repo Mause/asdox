@@ -45,14 +45,14 @@ class MetaDataDef(BaseDef):
 		self.type = type
 class PackageDef(BaseDef):
 	"Package Definition"
-	classes = set()
+	classes = list()
 	imports = set()
 	includes = set()
 
 class ClassDef(ObjectDef):
 	"Class Definition"
-	variables = set()
-	methods = set()
+	variables = list()
+	methods = list()
 	extends = "Object"
 	implements = set()
 	includes = set()
@@ -70,6 +70,9 @@ class ClassDef(ObjectDef):
 	
 class VariableDef(ObjectDef):
 	"Variable Definition"
+	def __init__(self, name = "", type = "*"):
+		self.name = name
+		self.type = type
 	def isStatic(self):
 		return self.hasModifer("static")
 	def isConstant(self):
@@ -77,4 +80,7 @@ class VariableDef(ObjectDef):
 	
 class FunctionDef(ObjectDef):
 	"Function Definition"
+	def __init__(self, name = "", type = "void"):
+		self.name = name
+		self.type = type
 	arguments = list()
