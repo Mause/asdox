@@ -59,6 +59,9 @@ class ClassDef(ObjectDef):
 	def __init__(self,name = "",type = "class"):
 		self.name = name;
 		self.type = type;
+	def addModifier(self, mod):
+		self.modifiers = self.modifiers.union( set(['public','internal','final','dynamic']).intersection(set([mod])) )
+		self.modifiers.difference_update( set(['public','internal']).difference(set([mod])))
 	def isDynamic(self):
 		return self.hasModifier("dynamic")
 	def isFinal(self):
