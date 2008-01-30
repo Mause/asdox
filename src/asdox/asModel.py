@@ -33,10 +33,22 @@ class BaseDef:
 		self.name = name
 		self.type = type
 class ObjectDef:
+	metadata = dict()
 	modifiers = set()
-	metadata = list()
+	ACCESS_MODIFIERS = set()
+	TYPE_MODIFIERS =  set()
+	def addModifier(self, mod):
+		self.modifiers = self.modifiers.union( self.ACCESS_MODIFIERS.union(self.TYPE_MODIFIERS).intersection(set([mod])) )
+		if mod in self.ACCESS_MODIFIERS:
+			self.modifiers.difference_update( self.ACCESS_MODIFIERS.difference(set([mod])))
 	def hasModifier(self,mod):
 		return mod in self.modifiers
+	def getModifiers(self):
+		return self.modifiers
+	def addMetadata(self,meta):
+		self.metadata[meta.name] = meta
+	def getMetadata(self,name):
+		return self.metadata[name]
 class MetaDataDef(BaseDef):
 	"MetaData Definition"
 	attributes = dict()
@@ -45,10 +57,18 @@ class MetaDataDef(BaseDef):
 		self.type = type
 class PackageDef(BaseDef):
 	"Package Definition"
-	classes = list()
+	def __init__(self,name = "",type = "package"):
+		self.name = name;
+		self.type = type;
+	classes = dict()
 	imports = set()
 	includes = set()
-
+	def addClass(self,cls):
+		self.classes[cls.name] = cls
+	def getClass(self,name):
+		return self.classes[name]
+	def getClasses(self):
+		return self.classes.values
 class ClassDef(ObjectDef):
 	"Class Definition"
 	variables = list()
@@ -56,12 +76,13 @@ class ClassDef(ObjectDef):
 	extends = "Object"
 	implements = set()
 	includes = set()
+	modifiers = set()
+	ACCESS_MODIFIERS = set(['public','internal'])
+	TYPE_MODIFIERS =  set(['final','dynamic'])
 	def __init__(self,name = "",type = "class"):
 		self.name = name;
 		self.type = type;
-	def addModifier(self, mod):
-		self.modifiers = self.modifiers.union( set(['public','internal','final','dynamic']).intersection(set([mod])) )
-		self.modifiers.difference_update( set(['public','internal']).difference(set([mod])))
+		self.modifiers.add("internal")
 	def isDynamic(self):
 		return self.hasModifier("dynamic")
 	def isFinal(self):
@@ -73,16 +94,23 @@ class ClassDef(ObjectDef):
 	
 class VariableDef(ObjectDef):
 	"Variable Definition"
+	__isConst = False
+	modifiers = set()
+	ACCESS_MODIFIERS = set(['public','internal','private','protected'])
+	TYPE_MODIFIERS =  set(['static'])
 	def __init__(self, name = "", type = "*"):
 		self.name = name
 		self.type = type
+		self.modifiers.add("internal")
 	def isStatic(self):
 		return self.hasModifer("static")
 	def isConstant(self):
-		pass
+		return self.__isConst
 	
 class FunctionDef(ObjectDef):
 	"Function Definition"
+	ACCESS_MODIFIERS = set(['public','internal','private','protected'])
+	TYPE_MODIFIERS =  set(['final','override','static'])
 	def __init__(self, name = "", type = "void"):
 		self.name = name
 		self.type = type
