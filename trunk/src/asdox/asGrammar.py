@@ -30,7 +30,8 @@ from asModel import *
 def getPackage( s,l,t ):
     pkg = PackageDef(t.name,t.type)
     if len(t.class_definitions) > 0:
-    	pkg.classes = t.class_definitions[0]
+	for cls in t.class_definitions[0]:
+	    pkg.addClass( cls )
     pkg.imports = set(t.imports)
     pkg.includes = set(t.includes)
     return pkg
@@ -42,7 +43,8 @@ def getClass( s,l,t ):
     if len(t.methods) > 0:
     	cls.methods = t.methods[0]
     if len(t.meta) > 0:
-	cls.metadata = t.meta[0]
+	for m in t.meta[0]:
+	    cls.addMetadata(m)
     cls.modifiers = set(t.class_modifiers)
     if len(t.class_implements) > 0:
     	cls.implements = set(t.class_implements[0])
@@ -143,4 +145,4 @@ _interface = Optional( base_attributes ) + INTERFACE + class_name + Optional( cl
 package_block = LCURL + ZeroOrMore( Group(_import).setResultsName("imports",listAllMatches="true") ^ Group(_include).setResultsName("includes",listAllMatches="true") ^ Group(classDef).setResultsName("class_definitions",listAllMatches="true") ) + RCURL
 packageDef = (PACKAGE("type") + Optional( package_name("name") ) + package_block).setParseAction(getPackage)
 
-source = ZeroOrMore( packageDef ^ _import ^ _include ^ classDef ^ _function )
+source = ZeroOrMore( packageDef ^ _import ^ _include ^ _function )

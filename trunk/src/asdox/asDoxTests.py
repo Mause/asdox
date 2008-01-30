@@ -47,29 +47,33 @@ class BaseDefinitionTestCase(unittest.TestCase):
 		self.assertEqual(result.name,expected.name)
 		self.assertEqual(result.attributes,expected.attributes)
 class ClassDefinitionTestCase(BaseDefinitionTestCase):
-	def xtestClassMetaData(self):
+	def testClassMetaData(self):
 		self.builder.addSource("""
-		[Bindable]
-		[Event(name="myEnableEvent", type="flash.events.Event")]
-		[Test(true)]
-		public class MyClass
-		{
+		package test{
+			[Bindable]
+			[Event(name="myEnableEvent", type="flash.events.Event")]
+			[Test(true)]
+			public class MyClass
+			{
+			}
 		}
 		""")
 		
 		result = self.builder.parseSource()
-		expected = asModel.ClassDef("MyClass")
-		expected.modifiers.add("public")
-		expected.metadata.append( asModel.MetaDataDef("Bindable") )
+		expected = asModel.PackageDef("test")
+		cls = asModel.ClassDef("MyClass")
+		cls.addModifier("public")
+		cls.addMetadata( asModel.MetaDataDef("Bindable") )
+		expected.addClass(cls)
 		event = asModel.MetaDataDef("Event")
 		event.attributes = {0:True,"name":"myEnableEvent","type":"flash.events.Event"}
-		expected.metadata.append( event )
+		expected.getClass("MyClass").addMetadata( event )
 		self.assertEqual(len(result),1)
-		self.clsTest(result[0],expected)
-		self.assertEqual(len(result[0].metadata),3)
-		self.metaTest(result[0].metadata[0],expected.metadata[0])
-		self.metaTest(result[0].metadata[1],expected.metadata[1])
-		self.metaTest(result[0].metadata[2],expected.metadata[2])
+		self.pkgTest(result[0],expected)
+		self.assertEqual(len(result[0].getClass("MyClass").metadata),3)
+		self.metaTest(result[0].getClass("MyClass").getMetadata("Bindable"),expected.getClass("MyClass").getMetadata("Bindable"))
+		self.metaTest(result[0].getClass("MyClass").getMetadata("Event"),expected.getClass("MyClass").getMetadata("Event"))
+		self.metaTest(result[0].getClass("MyClass").getMetadata("Test"),expected.getClass("MyClass").getMetadata("Test"))
 class PackageDefinitionTestCase(BaseDefinitionTestCase):
 	
 	def testDefaultPackage(self):
@@ -138,10 +142,9 @@ class PackageDefinitionTestCase(BaseDefinitionTestCase):
 		expected = asModel.PackageDef("com.gurufaction.mypackage","package");
 		self.pkgTest(result[0],expected)
 		
-		self.assertEqual(len(result[0].classes),1)
-		expected = asModel.ClassDef("MyClass","class");
-		expected.modifiers.add("public")
-		expected.includes = set(["file1.as","file2.as"])
-		self.clsTest(result[0].classes[0],expected)
+		cls = asModel.ClassDef("MyClass");
+		cls.addModifier("public")
+		cls.includes = set(["file1.as","file2.as"])
+		self.clsTest(result[0].getClass("MyClass"),cls)
 if __name__ == "__main__":
 	unittest.main()
