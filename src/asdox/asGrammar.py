@@ -41,7 +41,8 @@ def getClass( s,l,t ):
     if len(t.class_includes) > 0:
     	cls.includes = set(t.class_includes[0])
     if len(t.methods) > 0:
-    	cls.methods = t.methods[0]
+	for m in t.methods[0]:
+	    cls.addMethods(m)
     if len(t.meta) > 0:
 	for m in t.meta[0]:
 	    cls.addMetadata(m)
