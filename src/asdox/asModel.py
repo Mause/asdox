@@ -69,6 +69,12 @@ class PackageDef(BaseDef):
 		return self.__classes[name]
 	def getClasses(self):
 		return self.__classes.values
+	def addInclude(self,inc):
+		includes.add(inc)
+	def getIncludes(self):
+		return includes
+	def hasInclude(self,inc):
+		return inc in includes
 class ClassDef(ObjectDef):
 	"Class Definition"
 	__variables = dict()
@@ -95,6 +101,12 @@ class ClassDef(ObjectDef):
 		return self.__methods[name]
 	def getMethods(self):
 		return self.__methods.values
+	def addInclude(self,inc):
+		includes.add(inc)
+	def getIncludes(self):
+		return includes
+	def hasInclude(self,inc):
+		return inc in includes
 	def isDynamic(self):
 		return self.hasModifier("dynamic")
 	def isFinal(self):
