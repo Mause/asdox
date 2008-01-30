@@ -60,19 +60,19 @@ class PackageDef(BaseDef):
 	def __init__(self,name = "",type = "package"):
 		self.name = name;
 		self.type = type;
-	classes = dict()
+	__classes = dict()
 	imports = set()
 	includes = set()
 	def addClass(self,cls):
-		self.classes[cls.name] = cls
+		self.__classes[cls.name] = cls
 	def getClass(self,name):
-		return self.classes[name]
+		return self.__classes[name]
 	def getClasses(self):
-		return self.classes.values
+		return self.__classes.values
 class ClassDef(ObjectDef):
 	"Class Definition"
-	variables = list()
-	methods = list()
+	__variables = dict()
+	__methods = dict()
 	extends = "Object"
 	implements = set()
 	includes = set()
@@ -83,6 +83,18 @@ class ClassDef(ObjectDef):
 		self.name = name;
 		self.type = type;
 		self.modifiers.add("internal")
+	def addVariable(self,var):
+		self.__variables[var.name] = var
+	def getVariable(self,name):
+		return self.__variables[name]
+	def getVariables(self):
+		return self.__variables.values
+	def addMethod(self,method):
+		self.__methods[method.name] = method
+	def getMethod(self,name):
+		return self.__methods[name]
+	def getMethods(self):
+		return self.__methods.values
 	def isDynamic(self):
 		return self.hasModifier("dynamic")
 	def isFinal(self):
@@ -109,6 +121,7 @@ class VariableDef(ObjectDef):
 	
 class FunctionDef(ObjectDef):
 	"Function Definition"
+	modifiers = set()
 	ACCESS_MODIFIERS = set(['public','internal','private','protected'])
 	TYPE_MODIFIERS =  set(['final','override','static'])
 	def __init__(self, name = "", type = "void"):
