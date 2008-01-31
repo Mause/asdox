@@ -25,25 +25,41 @@
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 class Includable:
-	includes = set()
-	def addInclude(self,inc):
-		includes.add(inc)
+	"Actionscript Object that allows for declaring includes"
+	__includes = set()
+	def addInclude(self,name):
+		self.__includes.add(name)
 	def getIncludes(self):
-		return includes
-	def hasInclude(self,inc):
-		return inc in includes
+		return self.__includes
+	def hasInclude(self,name):
+		return name in self.__includes
 class Documentable:
+	"Actionscript Object that allows for JavaDoc declaration"
 	pass
+class Namespacable:
+	"Actionscript Object that allows for declaring and using namespaces"
+	__namespaces = dict()
+	__used_namespaces = set()
+	def addNamespace(self,namespace):
+		self.__namespaces[namespace.name] = namespace
+	def removeNamespace(self,name):
+		del self.__namespaces[name]
+	def useNamespace(self,name):
+		self.__used_namespaces.add(name)
+	def unUseNamespace(self,name):
+		self.__used_namespaces.discard(name)
 class Modifiable:
 	modifiers = set()
 	ACCESS_MODIFIERS = set()
 	TYPE_MODIFIERS =  set()
-	def addModifier(self, mod):
-		self.modifiers = self.modifiers.union( self.ACCESS_MODIFIERS.union(self.TYPE_MODIFIERS).intersection(set([mod])) )
+	def removeModifier(self,name):
+		self.modifiers.discard(name)
+	def addModifier(self, name):
+		self.modifiers = self.modifiers.union( self.ACCESS_MODIFIERS.union(self.TYPE_MODIFIERS).intersection(set([name])) )
 		if mod in self.ACCESS_MODIFIERS:
-			self.modifiers.difference_update( self.ACCESS_MODIFIERS.difference(set([mod])))
-	def hasModifier(self,mod):
-		return mod in self.modifiers
+			self.modifiers.difference_update( self.ACCESS_MODIFIERS.difference(set([name])))
+	def hasModifier(self,name):
+		return name in self.modifiers
 	def getModifiers(self):
 		return self.modifiers
 class Typeable:
@@ -54,12 +70,14 @@ class Typeable:
 		self.name = name
 		self.type = type
 class MetaTagable:
-	metadata = dict()
-	def addMetadata(self,meta):
-		self.metadata[meta.name] = meta
+	__metaTags = dict()
+	def addMetTag(self,tag):
+		self.__metaTags[tag.name] = tag
+	def removeMetaTag(self,name):
+		del self.__metaTags[name]
 	def getMetadata(self,name):
-		return self.metadata[name]
-class ASMetaTage(Typeable):
+		return self.__metaTags[name]
+class ASMetaTag(Typeable):
 	"Actionscript MetaTag Definition"
 	attributes = dict()
 	def __init__(self,name = "",type = "metatag"):
@@ -71,13 +89,21 @@ class ASPackage(Typeable,Includable):
 		self.name = name;
 		self.type = type;
 	__classes = dict()
-	imports = set()
+	__imports = set()
 	def addClass(self,cls):
 		self.__classes[cls.name] = cls
+	def removeClass(self,name):
+		del self.__classes[name]
 	def getClass(self,name):
 		return self.__classes[name]
 	def getClasses(self):
 		return self.__classes.values
+	def addImport(self,name):
+		self.__imports.add(name)
+	def removeImport(self,name):
+		self.__imports.discard(name)
+	def getImports(self):
+		return self.__imports
 class ASClass(Typeable,Modifiable,MetaTagable,Documentable,Includable):
 	"Actionscript Class Definition"
 	__fields = dict()
@@ -93,12 +119,16 @@ class ASClass(Typeable,Modifiable,MetaTagable,Documentable,Includable):
 		self.modifiers.add("internal")
 	def addField(self,field):
 		self.__fields[field.name] = field
+	def removeField(self,field):
+		del self.__fields[field.name]
 	def getField(self,name):
 		return self.__fields[name]
-	def getField(self):
+	def getFields(self):
 		return self.__fields.values
 	def addMethod(self,method):
 		self.__methods[method.name] = method
+	def removeMethod(self,name):
+		del self.__methods[name]
 	def getMethod(self,name):
 		return self.__methods[name]
 	def getMethods(self):
@@ -111,28 +141,34 @@ class ASClass(Typeable,Modifiable,MetaTagable,Documentable,Includable):
 		return self.hasModifier("public")
 	def isInterface(self):
 		return self.type == "interface"
-
-class ASField(Typeable,Modifiable,MetaTagable,Documentable):
-	"Actionscript Field Definition"
-	__isConst = False
+class ASNamespace(Typeable,Modifiable):
+	"Actionscript Namespace Definition"
 	modifiers = set()
 	ACCESS_MODIFIERS = set(['public','internal','private','protected'])
-	TYPE_MODIFIERS =  set(['static'])
+	def __init__(self, name = ""):
+		self.name = name;
+		self.type = "namespace"
+class ASField(Typeable,Modifiable,MetaTagable,Documentable):
+	"Actionscript Field Definition"
+	modifiers = set()
+	ACCESS_MODIFIERS = set(['public','internal','private','protected'])
+	TYPE_MODIFIERS =  set(['static','const'])
 	def __init__(self, name = "", type = "*"):
 		self.name = name
 		self.type = type
 		self.modifiers.add("internal")
 	def isStatic(self):
-		return self.hasModifer("static")
+		return self.hasModifier("static")
 	def isConstant(self):
-		return self.__isConst
+		return self.hasModifier("const")
 	
 class ASMethod(Typeable,Modifiable,MetaTagable,Documentable):
 	"Actionscript Method Definition"
+	__arguments = list()
 	modifiers = set()
 	ACCESS_MODIFIERS = set(['public','internal','private','protected'])
 	TYPE_MODIFIERS =  set(['final','override','static'])
 	def __init__(self, name = "", type = "void"):
 		self.name = name
 		self.type = type
-	arguments = list()
+	
