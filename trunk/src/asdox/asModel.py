@@ -24,16 +24,17 @@
 # LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-class BaseDef:
-	"Base Definition"
-	name = ""
-	type = ""
-	def __init__(self,name,type):
-		self.name = name
-		self.type = type
-class ObjectDef:
-	metadata = dict()
+class Includable:
+	includes = set()
+	def addInclude(self,inc):
+		includes.add(inc)
+	def getIncludes(self):
+		return includes
+	def hasInclude(self,inc):
+		return inc in includes
+class Documentable:
+	pass
+class Modifiable:
 	modifiers = set()
 	ACCESS_MODIFIERS = set()
 	TYPE_MODIFIERS =  set()
@@ -45,43 +46,44 @@ class ObjectDef:
 		return mod in self.modifiers
 	def getModifiers(self):
 		return self.modifiers
+class Typeable:
+	"Actionscript Type Definition"
+	name = ""
+	type = ""
+	def __init__(self,name,type):
+		self.name = name
+		self.type = type
+class MetaTagable:
+	metadata = dict()
 	def addMetadata(self,meta):
 		self.metadata[meta.name] = meta
 	def getMetadata(self,name):
 		return self.metadata[name]
-class MetaDataDef(BaseDef):
-	"MetaData Definition"
+class ASMetaTage(Typeable):
+	"Actionscript MetaTag Definition"
 	attributes = dict()
-	def __init__(self,name = "",type = "metadata"):
+	def __init__(self,name = "",type = "metatag"):
 		self.name = name
 		self.type = type
-class PackageDef(BaseDef):
-	"Package Definition"
+class ASPackage(Typeable,Includable):
+	"Actionscript Package Definition"
 	def __init__(self,name = "",type = "package"):
 		self.name = name;
 		self.type = type;
 	__classes = dict()
 	imports = set()
-	includes = set()
 	def addClass(self,cls):
 		self.__classes[cls.name] = cls
 	def getClass(self,name):
 		return self.__classes[name]
 	def getClasses(self):
 		return self.__classes.values
-	def addInclude(self,inc):
-		includes.add(inc)
-	def getIncludes(self):
-		return includes
-	def hasInclude(self,inc):
-		return inc in includes
-class ClassDef(ObjectDef):
-	"Class Definition"
-	__variables = dict()
+class ASClass(Typeable,Modifiable,MetaTagable,Documentable,Includable):
+	"Actionscript Class Definition"
+	__fields = dict()
 	__methods = dict()
 	extends = "Object"
 	implements = set()
-	includes = set()
 	modifiers = set()
 	ACCESS_MODIFIERS = set(['public','internal'])
 	TYPE_MODIFIERS =  set(['final','dynamic'])
@@ -89,24 +91,18 @@ class ClassDef(ObjectDef):
 		self.name = name;
 		self.type = type;
 		self.modifiers.add("internal")
-	def addVariable(self,var):
-		self.__variables[var.name] = var
-	def getVariable(self,name):
-		return self.__variables[name]
-	def getVariables(self):
-		return self.__variables.values
+	def addField(self,field):
+		self.__fields[field.name] = field
+	def getField(self,name):
+		return self.__fields[name]
+	def getField(self):
+		return self.__fields.values
 	def addMethod(self,method):
 		self.__methods[method.name] = method
 	def getMethod(self,name):
 		return self.__methods[name]
 	def getMethods(self):
 		return self.__methods.values
-	def addInclude(self,inc):
-		includes.add(inc)
-	def getIncludes(self):
-		return includes
-	def hasInclude(self,inc):
-		return inc in includes
 	def isDynamic(self):
 		return self.hasModifier("dynamic")
 	def isFinal(self):
@@ -115,9 +111,9 @@ class ClassDef(ObjectDef):
 		return self.hasModifier("public")
 	def isInterface(self):
 		return self.type == "interface"
-	
-class VariableDef(ObjectDef):
-	"Variable Definition"
+
+class ASField(Typeable,Modifiable,MetaTagable,Documentable):
+	"Actionscript Field Definition"
 	__isConst = False
 	modifiers = set()
 	ACCESS_MODIFIERS = set(['public','internal','private','protected'])
@@ -131,8 +127,8 @@ class VariableDef(ObjectDef):
 	def isConstant(self):
 		return self.__isConst
 	
-class FunctionDef(ObjectDef):
-	"Function Definition"
+class ASMethod(Typeable,Modifiable,MetaTagable,Documentable):
+	"Actionscript Method Definition"
 	modifiers = set()
 	ACCESS_MODIFIERS = set(['public','internal','private','protected'])
 	TYPE_MODIFIERS =  set(['final','override','static'])
