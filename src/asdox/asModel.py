@@ -48,6 +48,12 @@ class Namespacable:
 		self.__used_namespaces.add(name)
 	def unUseNamespace(self,name):
 		self.__used_namespaces.discard(name)
+class NamespaceModifiable:
+	__namespace = None
+	def getNamespace(self):
+		return self.__namespace
+	def setNamespace(self,namespace):
+		self.__namespace = namespace
 class Modifiable:
 	modifiers = set()
 	ACCESS_MODIFIERS = set()
@@ -79,11 +85,20 @@ class MetaTagable:
 		return self.__metaTags[name]
 class ASMetaTag(Typeable):
 	"Actionscript MetaTag Definition"
-	attributes = dict()
+	__params = dict()
 	def __init__(self,name = "",type = "metatag"):
 		self.name = name
 		self.type = type
-class ASPackage(Typeable,Includable):
+	def addParam(self,value,key = None):
+		if key == None:
+			self.__params[len(self.__params)] = value
+		else:
+			self.__params[key] = value
+	def getParam(self,name):
+		return self.__param[name]
+	def getParams(self):
+		return self.__params
+class ASPackage(Typeable,Includable,Namespacable):
 	"Actionscript Package Definition"
 	def __init__(self,name = "",type = "package"):
 		self.name = name;
@@ -104,7 +119,7 @@ class ASPackage(Typeable,Includable):
 		self.__imports.discard(name)
 	def getImports(self):
 		return self.__imports
-class ASClass(Typeable,Modifiable,MetaTagable,Documentable,Includable):
+class ASClass(Typeable,Modifiable,MetaTagable,Documentable,Includable,Namespacable):
 	"Actionscript Class Definition"
 	__fields = dict()
 	__methods = dict()
@@ -148,7 +163,7 @@ class ASNamespace(Typeable,Modifiable):
 	def __init__(self, name = ""):
 		self.name = name;
 		self.type = "namespace"
-class ASField(Typeable,Modifiable,MetaTagable,Documentable):
+class ASField(Typeable,Modifiable,MetaTagable,Documentable,NamespaceModifiable):
 	"Actionscript Field Definition"
 	modifiers = set()
 	ACCESS_MODIFIERS = set(['public','internal','private','protected'])
@@ -162,7 +177,8 @@ class ASField(Typeable,Modifiable,MetaTagable,Documentable):
 	def isConstant(self):
 		return self.hasModifier("const")
 	
-class ASMethod(Typeable,Modifiable,MetaTagable,Documentable):
+	
+class ASMethod(Typeable,Modifiable,MetaTagable,Documentable,NamespaceModifiable):
 	"Actionscript Method Definition"
 	__arguments = list()
 	modifiers = set()
@@ -171,4 +187,3 @@ class ASMethod(Typeable,Modifiable,MetaTagable,Documentable):
 	def __init__(self, name = "", type = "void"):
 		self.name = name
 		self.type = type
-	
