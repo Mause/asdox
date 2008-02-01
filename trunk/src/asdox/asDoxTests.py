@@ -33,25 +33,25 @@ class BaseDefinitionTestCase(unittest.TestCase):
 		pass
 	def pkgTest(self,result,expected):
 		self.assertEqual(result.__class__,expected.__class__)
-		self.assertEqual(result.name,expected.name)
-		self.assertEqual(result.type,expected.type)
-		self.assertEqual(result.imports,expected.imports)
+		self.assertEqual(result.getName(),expected.getName())
+		self.assertEqual(result.getType(),expected.getType())
+		self.assertEqual(result.getImports(),expected.getImports())
 	def clsTest(self,result,expected):
 		self.assertEqual(result.__class__,expected.__class__)
-		self.assertEqual(result.name,expected.name)
-		self.assertEqual(result.type,expected.type)
-		self.assertEqual(result.modifiers,expected.modifiers)
-		self.assertEqual(result.includes,expected.includes)
+		self.assertEqual(result.getName(),expected.getName())
+		self.assertEqual(result.getType(),expected.getType())
+		self.assertEqual(result.getModifiers(),expected.getModifiers())
+		self.assertEqual(result.getIncludes(),expected.getIncludes())
 		self.assertEqual(result.isInterface(),expected.isInterface())
 	def metaTest(self,result,expected):
-		self.assertEqual(result.name,expected.name)
-		self.assertEqual(result.attributes,expected.attributes)
+		self.assertEqual(result.getName(),expected.getName())
+		self.assertEqual(result.getParams(),expected.getParams())
 class ClassDefinitionTestCase(BaseDefinitionTestCase):
 	def testClassMetaData(self):
 		self.builder.addSource("""
 		package test{
-			[Bindable]
-			[Event(name="myEnableEvent", type="flash.events.Event")]
+			[Nothing]
+			[Event(name="myEnableEvent", other="flash.events.Event")]
 			[Test(true)]
 			public class MyClass
 			{
@@ -60,20 +60,22 @@ class ClassDefinitionTestCase(BaseDefinitionTestCase):
 		""")
 		
 		result = self.builder.parseSource()
-		expected = asModel.PackageDef("test")
-		cls = asModel.ClassDef("MyClass")
+		expected = asModel.ASPackage("test")
+		cls = asModel.ASClass("MyClass")
 		cls.addModifier("public")
-		cls.addMetadata( asModel.MetaDataDef("Bindable") )
+		cls.addMetaTag( asModel.ASMetaTag("Bindable") )
 		expected.addClass(cls)
-		event = asModel.MetaDataDef("Event")
-		event.attributes = {0:True,"name":"myEnableEvent","type":"flash.events.Event"}
-		expected.getClass("MyClass").addMetadata( event )
+		event = asModel.ASMetaTag("Event")
+		event.addParam(True)
+		event.addParam("myEnableEvent","name")
+		event.addParam("flash.events.Event","type")
+		expected.getClass("MyClass").addMetaTag( event )
 		self.assertEqual(len(result),1)
 		self.pkgTest(result[0],expected)
-		self.assertEqual(len(result[0].getClass("MyClass").metadata),3)
-		self.metaTest(result[0].getClass("MyClass").getMetadata("Bindable"),expected.getClass("MyClass").getMetadata("Bindable"))
-		self.metaTest(result[0].getClass("MyClass").getMetadata("Event"),expected.getClass("MyClass").getMetadata("Event"))
-		self.metaTest(result[0].getClass("MyClass").getMetadata("Test"),expected.getClass("MyClass").getMetadata("Test"))
+		self.assertEqual(len(result[0].getClass("MyClass").getMetaTags()),3)
+		self.metaTest(result[0].getClass("MyClass").getMetaTag("Bindable"),expected.getClass("MyClass").getMetaTag("Bindable"))
+		self.metaTest(result[0].getClass("MyClass").getMetaTag("Event"),expected.getClass("MyClass").getMetaTag("Event"))
+		self.metaTest(result[0].getClass("MyClass").getMetaTag("Test"),expected.getClass("MyClass").getMetaTag("Test"))
 class PackageDefinitionTestCase(BaseDefinitionTestCase):
 	
 	def testDefaultPackage(self):
@@ -86,7 +88,7 @@ class PackageDefinitionTestCase(BaseDefinitionTestCase):
 		result = self.builder.parseSource()
 		self.assertEqual(len(result),1)
 		
-		expected = asModel.PackageDef("","package");
+		expected = asModel.ASPackage("");
 		self.pkgTest(result[0],expected)
 	def testPackage(self):
 		self.builder.addSource("""
@@ -97,7 +99,7 @@ class PackageDefinitionTestCase(BaseDefinitionTestCase):
 		
 		result = self.builder.parseSource()
 		self.assertEqual(len(result),1)
-		expected = asModel.PackageDef("net.test.test","package");
+		expected = asModel.ASPackage("net.test.test");
 		self.pkgTest(result[0],expected)
 	def testMultiPackages(self):
 		self.builder.addSource("""
@@ -117,11 +119,11 @@ class PackageDefinitionTestCase(BaseDefinitionTestCase):
 		result = self.builder.parseSource()
 		self.assertEqual(len(result),3)
 		
-		expected = asModel.PackageDef("com.google.code.test","package");
+		expected = asModel.ASPackage("com.google.code.test");
 		self.pkgTest(result[0],expected)
-		expected = asModel.PackageDef("com.gurufaction.asDox","package");
+		expected = asModel.ASPackage("com.gurufaction.asDox");
 		self.pkgTest(result[1],expected)
-		expected = asModel.PackageDef("","package");
+		expected = asModel.ASPackage("");
 		self.pkgTest(result[2],expected)
 	def testPackageWithClass(self):
 		self.builder.addSource("""
@@ -139,12 +141,13 @@ class PackageDefinitionTestCase(BaseDefinitionTestCase):
 		
 		self.assertEqual( len(result),1)
 		
-		expected = asModel.PackageDef("com.gurufaction.mypackage","package");
+		expected = asModel.ASPackage("com.gurufaction.mypackage");
 		self.pkgTest(result[0],expected)
 		
-		cls = asModel.ClassDef("MyClass");
+		cls = asModel.ASClass("MyClass");
 		cls.addModifier("public")
-		cls.includes = set(["file1.as","file2.as"])
+		cls.addInclude("file1.as")
+		cls.addInclude("file2.as")
 		self.clsTest(result[0].getClass("MyClass"),cls)
 if __name__ == "__main__":
 	unittest.main()

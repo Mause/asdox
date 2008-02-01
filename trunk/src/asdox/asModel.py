@@ -68,46 +68,49 @@ class NamespaceModifiable:
 	def setNamespace(self,namespace):
 		self.__namespace = namespace
 class Modifiable:
-	modifiers = set()
-	ACCESS_MODIFIERS = set()
-	TYPE_MODIFIERS =  set()
+	__modifiers = set()
+	__ACCESS_MODIFIERS = set()
+	__TYPE_MODIFIERS =  set()
 	def removeModifier(self,name):
-		self.modifiers.discard(name)
+		self.__modifiers.discard(name)
 	def addModifier(self, name):
-		self.modifiers = self.modifiers.union( self.ACCESS_MODIFIERS.union(self.TYPE_MODIFIERS).intersection(set([name])) )
-		if name in self.ACCESS_MODIFIERS:
-			self.modifiers.difference_update( self.ACCESS_MODIFIERS.difference(set([name])))
+		self.__modifiers = self.__modifiers.union( self.__ACCESS_MODIFIERS.union(self.__TYPE_MODIFIERS).intersection(set([name])) )
+		if name in self.__ACCESS_MODIFIERS:
+			self.__modifiers.difference_update( self.__ACCESS_MODIFIERS.difference(set([name])))
 	def hasModifier(self,name):
-		return name in self.modifiers
+		return name in self.__modifiers
 	def getModifiers(self):
-		return self.modifiers
+		return self.__modifiers
 class Typeable:
 	"Actionscript Type Definition"
-	name = ""
-	type = ""
+	__name = ""
+	__type = ""
 	def __init__(self,name,type):
-		self.name = name
-		self.type = type
+		self.__name = name
+		self.__type = type
 	def getName(self):
-		return self.name
+		return self.__name
 	def setName(self,name):
-		self.name = name
+		self.__name = name
 	def getType(self):
-		return self.type
+		return self.__type
 class MetaTagable:
 	__metaTags = dict()
-	def addMetTag(self,tag):
-		self.__metaTags[tag.name] = tag
+	def addMetaTag(self,tag):
+		self.__metaTags[tag.getName()] = tag
 	def removeMetaTag(self,name):
 		del self.__metaTags[name]
-	def getMetadata(self,name):
+	def getMetaTag(self,name):
 		return self.__metaTags[name]
+	def getMetaTags(self):
+		return self.__metaTags.values
 class ASMetaTag(Typeable):
 	"Actionscript MetaTag Definition"
 	__params = dict()
 	def __init__(self,name = ""):
-		self.name = name
-		self.type = "metatag"
+		self._Typeable__name = name
+		self._Typeable__type = "metatag"
+		self.__params = dict()
 	def addParam(self,value,key = None):
 		if key == None:
 			self.__params[len(self.__params)] = value
@@ -116,16 +119,21 @@ class ASMetaTag(Typeable):
 	def getParam(self,name):
 		return self.__param[name]
 	def getParams(self):
-		return self.__params
+		return self.__params.values
 class ASPackage(Typeable,Includable,Namespacable):
 	"Actionscript Package Definition"
-	def __init__(self,name = ""):
-		self.name = name;
-		self.type = "package";
 	__classes = dict()
 	__imports = set()
+	def __init__(self,name = ""):
+		self._Typeable__name = name;
+		self._Typeable__type = "package";
+		self.__classes = dict()
+		self.__imports = set()
+		self._Includable__includes = set()
+		self._Namespacable__namespaces = dict()
+		self._Namespacable__used_namespaces = set()
 	def addClass(self,cls):
-		self.__classes[cls.name] = cls
+		self.__classes[cls.getName()] = cls
 	def removeClass(self,name):
 		del self.__classes[name]
 	def getClass(self,name):
@@ -143,13 +151,20 @@ class ASClass(Typeable,Modifiable,MetaTagable,Documentable,Includable,Namespacab
 	__fields = dict()
 	__methods = dict()
 	__extends = "Object"
-	modifiers = set()
-	ACCESS_MODIFIERS = set(['public','internal'])
-	TYPE_MODIFIERS =  set(['final','dynamic'])
 	def __init__(self,name = ""):
-		self.name = name;
-		self.type = "class";
-		self.modifiers.add("internal")
+		self._Typeable__name = name;
+		self._Typeable__type = "class";
+		self.__fields = dict()
+		self.__methods = dict()
+		self.__extends = "Object"
+		self._MetaTagable__metaTags = dict()
+		self._Modifiable__modifiers.add("internal")
+		self._Modifiable__ACCESS_MODIFIERS = set(['public','internal'])
+		self._Modifiable__TYPE_MODIFIERS =  set(['final','dynamic'])
+		self._Includable__includes = set()
+		self._Namespacable__namespaces = dict()
+		self._Namespacable__used_namespaces = set()
+		self._Implementable__implements = set()
 	def addField(self,field):
 		self.__fields[field.name] = field
 	def removeField(self,field):
@@ -177,41 +192,49 @@ class ASClass(Typeable,Modifiable,MetaTagable,Documentable,Includable,Namespacab
 	def isPublic(self):
 		return self.hasModifier("public")
 	def isInterface(self):
-		return self.type == "interface"
+		return self._Typeable__type == "interface"
 	def setInterface(self,yes):
 		if yes == True:
-			self.type = "interface"
+			self._Typeable__type = "interface"
 		else:
-			self.type = "class"
+			self._Typeable__type = "class"
 class ASNamespace(Typeable,Modifiable):
 	"Actionscript Namespace Definition"
-	modifiers = set()
-	ACCESS_MODIFIERS = set(['public','internal','private','protected'])
 	def __init__(self, name = ""):
-		self.name = name;
-		self.type = "namespace"
+		self._Typeable__name = name;
+		self._Typeable__type = "namespace"
+		self._Modifiable__modifiers = set()
+		self._Modifiable__ACCESS_MODIFIERS = set(['public','internal','private','protected'])
 class ASField(Typeable,Modifiable,MetaTagable,Documentable,NamespaceModifiable):
 	"Actionscript Field Definition"
-	modifiers = set()
-	ACCESS_MODIFIERS = set(['public','internal','private','protected'])
-	TYPE_MODIFIERS =  set(['static','const'])
 	def __init__(self, name = "", type = "*"):
-		self.name = name
-		self.type = type
-		self.modifiers.add("internal")
+		self._Typeable__name = name
+		self._Typeable__type = type
+		self._Modifiable__modifiers.add("internal")
+		self._MetaTagable__metaTags = dict()
+		self._Modifiable__ACCESS_MODIFIERS = set(['public','internal','private','protected'])
+		self._Modifiable__TYPE_MODIFIERS =  set(['static','const'])
+		self._NamespaceModifiable__namespace = None
 	def isStatic(self):
 		return self.hasModifier("static")
 	def isConstant(self):
 		return self.hasModifier("const")	
+class ASArg(Typeable):
+	def __init__(self, name = "", type = "*"):
+		self._Typeable__name = name
+		self._Typeable__type = type
 class ASMethod(Typeable,Modifiable,MetaTagable,Documentable,NamespaceModifiable):
 	"Actionscript Method Definition"
 	__args = dict()
-	modifiers = set()
-	ACCESS_MODIFIERS = set(['public','internal','private','protected'])
-	TYPE_MODIFIERS =  set(['final','override','static'])
 	def __init__(self, name = "", type = "void"):
-		self.name = name
-		self.type = type
+		self._Typeable__name = name
+		self._Typeable__type = type
+		self.__args = dict()
+		self._MetaTagable__metaTags = dict()
+		self._NamespaceModifiable__namespace = None
+		self._Modifiable__modifiers = set()
+		self._Modifiable__ACCESS_MODIFIERS = set(['public','internal','private','protected'])
+		self._Modifiable__TYPE_MODIFIERS =  set(['final','override','static'])
 	def addArgument(self,arg):
 		self.__args[arg.name] = arg
 	def removeArgument(self,arg):
