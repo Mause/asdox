@@ -27,22 +27,36 @@
 
 
 class PackageParsingTestCase(unittest.TestCase):
+    
     def setup(self):
         pass
+    
     def teardown(self): 
         pass
     
-    def testAnonymousePackage(self):
+# Test for (empty) a.ka. Anonymouse package name
+
+    def testUnnamedPackage(self):
         pass
     
-    def testPackageName(self):
+# Tests the sequence of characters (namespace) that makeup of the package name
+# e.g "package mx.core: namespace would be "mx.core"
+    
+    def testPackageNamespace(self):
         pass
+    
+# Test for dot(.) delimited package name
+# e.g com.gurufaction.MyClass
     
     def testNestedPackageName(self):
         pass
+
+# Test package declaration for class,interface,function, and namespace
+# member definitions
     
-    def testPackageWithClassDefinition(self):
+    def testPackageMembers(self):
         pass
+    
     
     
         
