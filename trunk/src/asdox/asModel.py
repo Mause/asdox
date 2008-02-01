@@ -29,10 +29,23 @@ class Includable:
 	__includes = set()
 	def addInclude(self,name):
 		self.__includes.add(name)
+	def removeInclude(self,name):
+		self.__includes.discard(name)
 	def getIncludes(self):
 		return self.__includes
 	def hasInclude(self,name):
 		return name in self.__includes
+class Implementable:
+	"Actionscript Object that allows for declaring implementation"
+	__implements = set()
+	def addImplement(self,name):
+		self.__implements.add(name)
+	def removeImplement(self,name):
+		self.__implements.discard(name)
+	def getImplements(self):
+		return self.__implements
+	def hasImplement(self,name):
+		return name in self.__implements
 class Documentable:
 	"Actionscript Object that allows for JavaDoc declaration"
 	pass
@@ -62,7 +75,7 @@ class Modifiable:
 		self.modifiers.discard(name)
 	def addModifier(self, name):
 		self.modifiers = self.modifiers.union( self.ACCESS_MODIFIERS.union(self.TYPE_MODIFIERS).intersection(set([name])) )
-		if mod in self.ACCESS_MODIFIERS:
+		if name in self.ACCESS_MODIFIERS:
 			self.modifiers.difference_update( self.ACCESS_MODIFIERS.difference(set([name])))
 	def hasModifier(self,name):
 		return name in self.modifiers
@@ -75,6 +88,12 @@ class Typeable:
 	def __init__(self,name,type):
 		self.name = name
 		self.type = type
+	def getName(self):
+		return self.name
+	def setName(self,name):
+		self.name = name
+	def getType(self):
+		return self.type
 class MetaTagable:
 	__metaTags = dict()
 	def addMetTag(self,tag):
@@ -86,9 +105,9 @@ class MetaTagable:
 class ASMetaTag(Typeable):
 	"Actionscript MetaTag Definition"
 	__params = dict()
-	def __init__(self,name = "",type = "metatag"):
+	def __init__(self,name = ""):
 		self.name = name
-		self.type = type
+		self.type = "metatag"
 	def addParam(self,value,key = None):
 		if key == None:
 			self.__params[len(self.__params)] = value
@@ -100,9 +119,9 @@ class ASMetaTag(Typeable):
 		return self.__params
 class ASPackage(Typeable,Includable,Namespacable):
 	"Actionscript Package Definition"
-	def __init__(self,name = "",type = "package"):
+	def __init__(self,name = ""):
 		self.name = name;
-		self.type = type;
+		self.type = "package";
 	__classes = dict()
 	__imports = set()
 	def addClass(self,cls):
@@ -119,18 +138,17 @@ class ASPackage(Typeable,Includable,Namespacable):
 		self.__imports.discard(name)
 	def getImports(self):
 		return self.__imports
-class ASClass(Typeable,Modifiable,MetaTagable,Documentable,Includable,Namespacable):
+class ASClass(Typeable,Modifiable,MetaTagable,Documentable,Includable,Namespacable,Implementable):
 	"Actionscript Class Definition"
 	__fields = dict()
 	__methods = dict()
-	extends = "Object"
-	implements = set()
+	__extends = "Object"
 	modifiers = set()
 	ACCESS_MODIFIERS = set(['public','internal'])
 	TYPE_MODIFIERS =  set(['final','dynamic'])
-	def __init__(self,name = "",type = "class"):
+	def __init__(self,name = ""):
 		self.name = name;
-		self.type = type;
+		self.type = "class";
 		self.modifiers.add("internal")
 	def addField(self,field):
 		self.__fields[field.name] = field
@@ -148,6 +166,10 @@ class ASClass(Typeable,Modifiable,MetaTagable,Documentable,Includable,Namespacab
 		return self.__methods[name]
 	def getMethods(self):
 		return self.__methods.values
+	def getExtends(self):
+		return self.__extends
+	def setExtends(self,name):
+		self.__extends = name
 	def isDynamic(self):
 		return self.hasModifier("dynamic")
 	def isFinal(self):
@@ -156,6 +178,11 @@ class ASClass(Typeable,Modifiable,MetaTagable,Documentable,Includable,Namespacab
 		return self.hasModifier("public")
 	def isInterface(self):
 		return self.type == "interface"
+	def setInterface(self,yes):
+		if yes == True:
+			self.type = "interface"
+		else:
+			self.type = "class"
 class ASNamespace(Typeable,Modifiable):
 	"Actionscript Namespace Definition"
 	modifiers = set()
@@ -175,15 +202,21 @@ class ASField(Typeable,Modifiable,MetaTagable,Documentable,NamespaceModifiable):
 	def isStatic(self):
 		return self.hasModifier("static")
 	def isConstant(self):
-		return self.hasModifier("const")
-	
-	
+		return self.hasModifier("const")	
 class ASMethod(Typeable,Modifiable,MetaTagable,Documentable,NamespaceModifiable):
 	"Actionscript Method Definition"
-	__arguments = list()
+	__args = dict()
 	modifiers = set()
 	ACCESS_MODIFIERS = set(['public','internal','private','protected'])
 	TYPE_MODIFIERS =  set(['final','override','static'])
 	def __init__(self, name = "", type = "void"):
 		self.name = name
 		self.type = type
+	def addArgument(self,arg):
+		self.__args[arg.name] = arg
+	def removeArgument(self,arg):
+		del self.__args[arg.name]
+	def getArgument(self,name):
+		return self.__args[name]
+	def getArguments(self):
+		return self.__args.values
