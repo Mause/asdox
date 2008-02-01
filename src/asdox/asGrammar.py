@@ -28,44 +28,53 @@ from pyparsing import *
 from asModel import *
 
 def getPackage( s,l,t ):
-    pkg = PackageDef(t.name,t.type)
+    pkg = ASPackage(t.name)
     if len(t.class_definitions) > 0:
 	for cls in t.class_definitions[0]:
 	    pkg.addClass( cls )
-    pkg.imports = set(t.imports)
-    pkg.includes = set(t.includes)
+	for imp in t.imports:
+	    pkg.addImport(imp)
+	for inc in t.includes:
+	    pkg.addInclude(inc)
     return pkg
 
 def getClass( s,l,t ):
-    cls = ClassDef(t.name,t.type)
+    cls = ASClass(t.name)
+    if t.type == "interface":
+	cls.setInterface(True)
     if len(t.class_includes) > 0:
-    	cls.includes = set(t.class_includes[0])
+	for inc in t.class_includes[0]:
+	    cls.addInclude(inc)
     if len(t.methods) > 0:
 	for m in t.methods[0]:
 	    cls.addMethods(m)
     if len(t.meta) > 0:
 	for m in t.meta[0]:
-	    cls.addMetadata(m)
-    cls.modifiers = set(t.class_modifiers)
+	    cls.addMetaTag(m)
+    for mod in t.class_modifiers:
+	cls.addModifier(mod)
     if len(t.class_implements) > 0:
-    	cls.implements = set(t.class_implements[0])
-    cls.extends = t.extends
+	for imp in t.class_implements[0]:
+	    cls.addImplement(imp)
+    cls.setExtends(t.extends)
     return cls
 
 def getMethod( s,l,t ):
-    fc = FunctionDef(t.name,t.type)
+    fc = ASMethod(t.name)
     if len(t.modifiers) > 0:
-    	fc.modifiers = set(t.modifiers[0])
+	for mod in t.modifiers[0]:
+	    fc.addModifiers (mod)
     if len(t.args) > 0:
-    	fc.arguments = st.args
+	for arg in t.args:
+	    fc.addArgument(arg)
     return fc
 
 def getArgument(s,l,t):
-    arg = BaseDef(t.name,t.type)
+    arg = ASArg(t.name,t.type)
     return arg
 
 def getMetaData(s,l,t):
-    meta = MetaDataDef(t.name)
+    meta = ASMetaTag(t.name)
     return meta
     
 COLON,LPARN,RPARN,LCURL,RCURL,EQUAL,SEMI,LSQUARE,RSQUARE = map(Suppress,":(){}=;[]")
