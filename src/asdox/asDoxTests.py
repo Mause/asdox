@@ -50,7 +50,7 @@ class ClassDefinitionTestCase(BaseDefinitionTestCase):
 	def testClassMetaData(self):
 		self.builder.addSource("""
 		package test{
-			[Nothing]
+			[Bindable]
 			[Event(name="myEnableEvent", other="flash.events.Event")]
 			[Test(true)]
 			public class MyClass
