@@ -27,6 +27,8 @@
 class Includable:
 	"Actionscript Object that allows for declaring includes"
 	__includes = set()
+	def __init__(self):
+		self.__includes = set()
 	def addInclude(self,name):
 		self.__includes.add(name)
 	def removeInclude(self,name):
@@ -38,6 +40,8 @@ class Includable:
 class Implementable:
 	"Actionscript Object that allows for declaring implementation"
 	__implements = set()
+	def __init__(self):
+		self.__implements = set()
 	def addImplement(self,name):
 		self.__implements.add(name)
 	def removeImplement(self,name):
@@ -53,24 +57,36 @@ class Namespacable:
 	"Actionscript Object that allows for declaring and using namespaces"
 	__namespaces = dict()
 	__used_namespaces = set()
+	def __init__(self):
+		self.__namespaces = dict()
+		self.__used_namespaces = set()
 	def addNamespace(self,namespace):
-		self.__namespaces[namespace.name] = namespace
+		self.__namespaces[namespace.getName()] = namespace
 	def removeNamespace(self,name):
 		del self.__namespaces[name]
+	def getNamespace(self,name):
+		return self.__namespace.get(name,ASNamespace(""))
 	def useNamespace(self,name):
 		self.__used_namespaces.add(name)
 	def unUseNamespace(self,name):
 		self.__used_namespaces.discard(name)
 class NamespaceModifiable:
 	__namespace = None
+	def __init__(self):
+		self.__namespace = None
 	def getNamespace(self):
 		return self.__namespace
 	def setNamespace(self,namespace):
 		self.__namespace = namespace
 class Modifiable:
+	"Actionscript Object that can be modified"
 	__modifiers = set()
 	__ACCESS_MODIFIERS = set()
 	__TYPE_MODIFIERS =  set()
+	def __init__(self):
+		self.__modifiers = set()
+		self.__ACCESS_MODIFIERS = set()
+		self.__TYPE_MODIFIERS =  set()
 	def removeModifier(self,name):
 		self.__modifiers.discard(name)
 	def addModifier(self, name):
@@ -95,22 +111,25 @@ class Typeable:
 	def getType(self):
 		return self.__type
 class MetaTagable:
-	__metaTags = dict()
+	"Actionscript Object that allows for MetaTags"
+	__metaTag = dict()
+	def __init__(self):
+		self.__metaTag = dict()
 	def addMetaTag(self,tag):
 		self.__metaTags[tag.getName()] = tag
 	def removeMetaTag(self,name):
 		del self.__metaTags[name]
 	def getMetaTag(self,name):
-		return self.__metaTags[name]
+		return self.__metaTags.get(name,ASMetaTag(""))
 	def getMetaTags(self):
-		return self.__metaTags.values
+		return self.__metaTags
 class ASMetaTag(Typeable):
 	"Actionscript MetaTag Definition"
 	__params = dict()
 	def __init__(self,name = ""):
+		self.__params = dict()
 		self._Typeable__name = name
 		self._Typeable__type = "metatag"
-		self.__params = dict()
 	def addParam(self,value,key = None):
 		if key == None:
 			self.__params[len(self.__params)] = value
@@ -119,16 +138,16 @@ class ASMetaTag(Typeable):
 	def getParam(self,name):
 		return self.__param[name]
 	def getParams(self):
-		return self.__params.values
+		return self.__params
 class ASPackage(Typeable,Includable,Namespacable):
 	"Actionscript Package Definition"
 	__classes = dict()
 	__imports = set()
 	def __init__(self,name = ""):
-		self._Typeable__name = name;
-		self._Typeable__type = "package";
 		self.__classes = dict()
 		self.__imports = set()
+		self._Typeable__name = name;
+		self._Typeable__type = "package";
 		self._Includable__includes = set()
 		self._Namespacable__namespaces = dict()
 		self._Namespacable__used_namespaces = set()
@@ -137,9 +156,9 @@ class ASPackage(Typeable,Includable,Namespacable):
 	def removeClass(self,name):
 		del self.__classes[name]
 	def getClass(self,name):
-		return self.__classes[name]
+		return self.__classes.get(name,ASClass(""))
 	def getClasses(self):
-		return self.__classes.values
+		return self.__classes
 	def addImport(self,name):
 		self.__imports.add(name)
 	def removeImport(self,name):
@@ -152,11 +171,11 @@ class ASClass(Typeable,Modifiable,MetaTagable,Documentable,Includable,Namespacab
 	__methods = dict()
 	__extends = "Object"
 	def __init__(self,name = ""):
-		self._Typeable__name = name;
-		self._Typeable__type = "class";
 		self.__fields = dict()
 		self.__methods = dict()
 		self.__extends = "Object"
+		self._Typeable__name = name
+		self._Typeable__type = "class"
 		self._MetaTagable__metaTags = dict()
 		self._Modifiable__modifiers.add("internal")
 		self._Modifiable__ACCESS_MODIFIERS = set(['public','internal'])
@@ -166,21 +185,21 @@ class ASClass(Typeable,Modifiable,MetaTagable,Documentable,Includable,Namespacab
 		self._Namespacable__used_namespaces = set()
 		self._Implementable__implements = set()
 	def addField(self,field):
-		self.__fields[field.name] = field
-	def removeField(self,field):
-		del self.__fields[field.name]
+		self.__fields[field.getName()] = field
+	def removeField(self,name):
+		del self.__fields[name]
 	def getField(self,name):
-		return self.__fields[name]
+		return self.__fields.get(name,ASField(""))
 	def getFields(self):
-		return self.__fields.values
+		return self.__fields
 	def addMethod(self,method):
-		self.__methods[method.name] = method
+		self.__methods[method.getName()] = method
 	def removeMethod(self,name):
 		del self.__methods[name]
 	def getMethod(self,name):
-		return self.__methods[name]
+		return self.__methods.get(name,ASMethod(""))
 	def getMethods(self):
-		return self.__methods.values
+		return self.__methods
 	def getExtends(self):
 		return self.__extends
 	def setExtends(self,name):
@@ -227,19 +246,19 @@ class ASMethod(Typeable,Modifiable,MetaTagable,Documentable,NamespaceModifiable)
 	"Actionscript Method Definition"
 	__args = dict()
 	def __init__(self, name = "", type = "void"):
+		self.__args = dict()
 		self._Typeable__name = name
 		self._Typeable__type = type
-		self.__args = dict()
 		self._MetaTagable__metaTags = dict()
 		self._NamespaceModifiable__namespace = None
 		self._Modifiable__modifiers = set()
 		self._Modifiable__ACCESS_MODIFIERS = set(['public','internal','private','protected'])
 		self._Modifiable__TYPE_MODIFIERS =  set(['final','override','static'])
 	def addArgument(self,arg):
-		self.__args[arg.name] = arg
-	def removeArgument(self,arg):
-		del self.__args[arg.name]
+		self.__args[arg.getName()] = arg
+	def removeArgument(self,name):
+		del self.__args[name]
 	def getArgument(self,name):
-		return self.__args[name]
+		return self.__args.get(name,ASArg(""))
 	def getArguments(self):
-		return self.__args.values
+		return self.__args
