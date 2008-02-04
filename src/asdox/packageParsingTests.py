@@ -43,9 +43,10 @@ class PackageParsingTestCase(unittest.TestCase):
         self.builder.addSource("package {}") #build unamed package
         unamedPackage = self.builder.getPackage("").getName() #get package name
         classCount = len(self.builder.getPackage("").getClasses()) # number of classes declared in package
-        
+
+#unit tests	
         self.assertEqual(unamedPackage,"","package name is not blank") #test unamed package
-        self.assertNotEqual(classCount,0,"There are classes declared in the package") # test that no classes are declared inside package
+        self.assertEqual(classCount,0,"package should no contain classes") # test that no classes are declared inside package
         
 # Tests the sequence of characters (namespace) that makeup of the package name
 # e.g "package mx.core: namespace would be "mx.core"
@@ -65,5 +66,5 @@ class PackageParsingTestCase(unittest.TestCase):
     def testPackageMembers(self):
         pass
 
-if __name__ == "__main__":
+if __name__ == "__main__": #allows you to run from console or command line
 	unittest.main()
