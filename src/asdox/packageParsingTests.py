@@ -33,16 +33,20 @@ class PackageParsingTestCase(unittest.TestCase):
         builder = asBuilder.Builder()
     
     def teardown(self): 
-        builder = null
+        builder = none
     
 # Test for (empty) a.k.a. Anonymouse package name
 
     def testUnnamedPackage(self):
-        builder.addSource("package {}") #build unamed package
-        unamedPackage = builder.getPackage("") #get package
         
-        self.assertEquals(unamedPackage.getPackageName(),"") #test unamed package
-    
+        "Test for unamed package"
+        builder.addSource("package {}") #build unamed package
+        unamedPackage = builder.getPackage("").getName() #get package name
+        classCount = len(builder.getClasses()) # number of classes declared in package
+        
+        self.assertEqual(unamedPackage,"","package name is not blank") #test unamed package
+        self.assertNotEqual(classCount,0,"There are classes declared in the package") # test that no classes are declared inside package
+        
 # Tests the sequence of characters (namespace) that makeup of the package name
 # e.g "package mx.core: namespace would be "mx.core"
     
