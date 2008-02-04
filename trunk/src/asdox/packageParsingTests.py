@@ -25,20 +25,23 @@
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import unittest
+import unittest,asBuilder
 
 class PackageParsingTestCase(unittest.TestCase):
     
     def setup(self):
-        pass
+        builder =asBuilder.Builder()
     
     def teardown(self): 
-        pass
+        builder = null
     
-# Test for (empty) a.ka. Anonymouse package name
+# Test for (empty) a.k.a. Anonymouse package name
 
     def testUnnamedPackage(self):
-        pass
+        builder.addSource("package {}") #build unamed package
+        unamedPackage = builder.getPackage("") #get package name
+        
+        self.assertEquals(unamedPackage,"") #test unamed package
     
 # Tests the sequence of characters (namespace) that makeup of the package name
 # e.g "package mx.core: namespace would be "mx.core"
