@@ -30,7 +30,7 @@ import unittest,asBuilder
 class PackageParsingTestCase(unittest.TestCase):
     
     def setup(self):
-        builder =asBuilder.Builder()
+        builder = asBuilder.Builder()
     
     def teardown(self): 
         builder = null
@@ -39,9 +39,9 @@ class PackageParsingTestCase(unittest.TestCase):
 
     def testUnnamedPackage(self):
         builder.addSource("package {}") #build unamed package
-        unamedPackage = builder.getPackage("") #get package name
+        unamedPackage = builder.getPackage("") #get package
         
-        self.assertEquals(unamedPackage,"") #test unamed package
+        self.assertEquals(unamedPackage.getPackageName(),"") #test unamed package
     
 # Tests the sequence of characters (namespace) that makeup of the package name
 # e.g "package mx.core: namespace would be "mx.core"
