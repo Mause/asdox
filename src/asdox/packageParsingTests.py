@@ -42,12 +42,15 @@ class PackageParsingTestCase(unittest.TestCase):
         "Test for unamed package"
         self.builder.addSource("package {}") #build unamed package
         unamedPackage = self.builder.getPackage("").getName() #get package name
-        classCount = len(self.builder.getPackage("").getClasses()) # number of classes declared in package
-
+        classCount = len(self.builder.getPackage("").getClasses()) # number of classe declarations in package
+	includeCount = len(self.builder.getIncludes()) #number of included declarations in package
+	
 #unit tests	
         self.assertEqual(unamedPackage,"","package name is not blank") #test unamed package
-        self.assertEqual(classCount,0,"package should no contain classes") # test that no classes are declared inside package
-        
+        self.assertEqual(classCount,0,"package contains one or more class declarations") # test for class declarations inside a package declaration
+	self.assetEqual(includeCount,0,"package contains one or more include directives") # test for include directives inside a package dclaration
+	#self.assertEqual() #test for import statements inside a package declaration
+	
 # Tests the sequence of characters (namespace) that makeup of the package name
 # e.g "package mx.core: namespace would be "mx.core"
     
