@@ -28,29 +28,57 @@ import asGrammar,os,fnmatch
 
 class Builder:
 	"Actionscript Source Builder"
-	source = list()
+	sources = list()
 	model = list()
+	__packages = dict()
 	def __init__(self):
 		self.model[:] = []
-		self.source[:] = []
+		self.sources[:] = []
 	def addSource(self,source,pattern = "*.as"):
 		try:
 			try:
-				self.source.append( source.read() )
+				# If 'source' is a file object read it.
+				self.parseSource( source.read() )
 			except:
-				self.source.append( open(source,"rb").read() )
+				# If 'source' is a filename open and read file.
+				self.parseSource( open(source,"rb").read() )
 		except IOError:
+			# If 'source' is a directory read all files matching the
+			# specified pattern.
 			if os.path.isdir( source ):
 				files = self.locate(pattern,source)
 				for f in files:
-					self.source.append( open(f).read() )
+					self.parseSource( open(f).read() )
 			else:
-				self.source.append( source )
-	def parseSource(self):
-		for src in self.source:	 
-			for obj in asGrammar.source.parseString(src):
-				self.model.append( obj )
-		return self.model
+				# If 'source' is a string append to source list
+				self.parseSource( source )
+	def parseSource(self,src):
+		self.sources.append( src )
+		results = asGrammar.source.parseString(src)
+		
+		for obj in results:
+			self.model.append(obj)
+			if obj.getType() == "package":
+				# Test if package currently exists in dictionary
+				if obj.getName() in self.__packages:
+					curPkg = self.__packages[obj.getName()]
+					for cls in obj.getClasses():
+						if cls.getName() in curPkg.getClasses():
+							# Do nothing if class already exists
+							pass
+						else:
+							curPkg.addClass(cls)
+				else:
+					# Add package object to dictionary using the 
+					# package name as the key.
+					self.__packages[obj.getName()] = obj
+		return results
+	def getPackage(self,name):
+		return self.__packages.get(name,None)
+	def getPackages(self):
+		return self.__packages
+	def hasPackage(self,name):
+		return name in self.__packages
 	def locate(self,pattern, root=os.getcwd()):
 		for path, dirs, files in os.walk(root):
 			for filename in [os.path.abspath(os.path.join(path, filename)) for filename in files if fnmatch.fnmatch(filename, pattern)]:
