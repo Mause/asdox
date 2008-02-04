@@ -29,20 +29,20 @@ import unittest,asBuilder
 
 class PackageParsingTestCase(unittest.TestCase):
     
-    def setup(self):
-        builder = asBuilder.Builder()
+    def setUp(self):
+        self.builder = asBuilder.Builder()
     
-    def teardown(self): 
-        builder = none
+    def tearDown(self): 
+        self.builder = None
     
 # Test for (empty) a.k.a. Anonymouse package name
 
     def testUnnamedPackage(self):
         
         "Test for unamed package"
-        builder.addSource("package {}") #build unamed package
-        unamedPackage = builder.getPackage("").getName() #get package name
-        classCount = len(builder.getClasses()) # number of classes declared in package
+        self.builder.addSource("package {}") #build unamed package
+        unamedPackage = self.builder.getPackage("").getName() #get package name
+        classCount = len(self.builder.getPackage("").getClasses()) # number of classes declared in package
         
         self.assertEqual(unamedPackage,"","package name is not blank") #test unamed package
         self.assertNotEqual(classCount,0,"There are classes declared in the package") # test that no classes are declared inside package
@@ -64,3 +64,6 @@ class PackageParsingTestCase(unittest.TestCase):
     
     def testPackageMembers(self):
         pass
+
+if __name__ == "__main__":
+	unittest.main()
