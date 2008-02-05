@@ -43,11 +43,14 @@ def getClass( s,l,t ):
     if t.type == "interface":
 	cls.setInterface(True)
     if len(t.class_includes) > 0:
-	for inc in t.class_includes[0]:
-	    cls.addInclude(inc)
+	for inc in t.class_includes:
+	    cls.addInclude(inc[0])
+    if len(t.class_fields) > 0:
+	for f in t.class_fields:
+	    cls.addField(f[0])
     if len(t.methods) > 0:
-	for m in t.methods[0]:
-	    cls.addMethods(m)
+	for m in t.methods:
+	    cls.addMethods(m[0])
     if len(t.meta) > 0:
 	for m in t.meta[0]:
 	    cls.addMetaTag(m)
@@ -58,7 +61,11 @@ def getClass( s,l,t ):
 	    cls.addImplement(imp)
     cls.setExtends(t.extends)
     return cls
-
+def getField( s,l,t ):
+    fld = ASField(t.name,t.type)
+    for mod in t.field_modifiers:
+	fld.addModifier(mod)
+    return fld
 def getMethod( s,l,t ):
     fc = ASMethod(t.name)
     if len(t.modifiers) > 0:
@@ -125,7 +132,7 @@ metadata = (LSQUARE + identifier("name") + Optional( metadata_attributes ) + RSQ
 variable_kind = VAR ^ CONST
 variable_init = EQUAL + Optional( QuotedString(quoteChar="\"", escChar='\\') ^ integer )
 variable = identifier("name") + Optional(type("type"),"*") + Optional( variable_init ) 
-variable_definition = variable_kind + variable + SEMI
+variable_definition = variable_kind("kind") + identifier("name") + Optional(type("type"),"*") + Optional( variable_init ) + SEMI
 argument_definition = variable
 
 function_name = Optional( GET ^ SET ) + identifier
@@ -142,9 +149,9 @@ extended_attributes = base_attributes ^ PRIVATE ^ PROTECTED
 class_attributes = Optional(base_attributes, "internal") + Optional( FINAL ) + Optional( DYNAMIC )
 class_block_attributes = Optional(extended_attributes, "internal") + Optional(STATIC) + Optional(PROTOTYPE)
 class_method_attributes = class_block_attributes + Optional(FINAL) + Optional(OVERRIDE) + Optional(NATIVE)
-class_variables = ZeroOrMore(metadata) + class_block_attributes + variable_definition
+class_variables = (ZeroOrMore(metadata).setResultsName("field_meta",listAllMatches="true") + class_block_attributes("field_modifiers") + variable_definition).setParseAction(getField)
 class_method = (ZeroOrMore(metadata) + class_method_attributes.setResultsName("modifiers",listAllMatches="true") + _function).setParseAction(getMethod)
-class_block = LCURL + ZeroOrMore(_include).setResultsName("class_includes",listAllMatches="true") ^ ZeroOrMore(class_variables) ^ ZeroOrMore(class_method).setResultsName("methods",listAllMatches="true") + RCURL
+class_block = LCURL + ZeroOrMore( Group(_include).setResultsName("class_includes",listAllMatches="true") ^ Group(class_variables).setResultsName("class_fields",listAllMatches="true") ^ Group(class_method).setResultsName("methods",listAllMatches="true")) + RCURL
 class_name = Combine(identifier + ZeroOrMore( DOT + identifier ))
 class_implements = IMPLEMENTS + delimitedList( class_name ).setResultsName("class_implements",listAllMatches="true")
 class_extends = EXTENDS + class_name("extends")

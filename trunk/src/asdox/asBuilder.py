@@ -34,6 +34,7 @@ class Builder:
 	def __init__(self):
 		self.model[:] = []
 		self.sources[:] = []
+		self.__packages = dict()
 	def addSource(self,source,pattern = "*.as"):
 		try:
 			try:
