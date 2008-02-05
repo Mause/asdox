@@ -42,14 +42,22 @@ class PackageParsingTestCase(unittest.TestCase):
         "Test for unamed package"
         self.builder.addSource("package {}") #build unamed package
         unamedPackage = self.builder.getPackage("").getName() #get package name
-        classCount = len(self.builder.getPackage("").getClasses()) # number of classe declarations in package
-	includeCount = len(self.builder.getPackage("").getIncludes()) #number of included declarations in package
+        classCount = len(self.builder.getPackage("").getClasses()) # number of classe declarations inside the package
+	includeCount = len(self.builder.getPackage("").getIncludes()) #number of included declarations inside the package
+	importCount = len(self.builder.getPackage().getImports()) # number of import statements inside the package	
+	namespaceCount = len(self.builder.getPackage().getNamespaces()) # number if namespace declarations inside the package definition
+	interfaceCount = len(self.builder.getPackage().getInterfaces()) # number of interface definitions inside the package definiton
+	#STUB variableCount = len(self.builder.getPackage().getVariables()) #number of variable declarations inside the package defintion
+	#STUB functionCount = len(self.builder.getPackage().getFunctions()) #number of variable declarations inside the package defintion
 	
-#unit tests	
+#unit tests  definitons	
         self.assertEqual(unamedPackage,"","package name is not blank") #test unamed package
-        self.assertEqual(classCount,0,"package contains one or more class declarations") # test for class declarations inside a package declaration
-	self.assertEqual(includeCount,0,"package contains one or more include directives") # test for include directives inside a package dclaration
-	#self.assertEqual() #test for import statements inside a package declaration
+        self.assertEqual(classCount,0,"package contains one or more class declarations") # test for zero class declarations inside a package declaration
+	self.assertEqual(includeCount,0,"package contains one or more include directives") # test for zero include directives inside a package dclaration
+	self.assertEqual(importCount,0,"package contains one or more import statements") #test for zero import statements inside a package declaration
+	self.assertEqual(namespaceCount,0,"package contains one or more namespace definitions") #test for zero namespace declarations inside a package definition
+	#STUB self.assertEqual(variableCount,0,"package contains one or more variable declarations") #test for zero variable declarations inside a package definition
+	#STUB self.assertEqual(funtionCount,0,"package contains one or more funtion declarations") #test for zero function definitions inside a package definition
 	
 # Tests the sequence of characters (namespace) that makeup of the package name
 # e.g "package mx.core: namespace would be "mx.core"
