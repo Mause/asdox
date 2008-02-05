@@ -71,11 +71,5 @@ class PackageParsingTestCase(unittest.TestCase):
     def testNestedPackageName(self):
         pass
 
-# Test package declaration for class,interface,function, and namespace
-# member definitions
-    
-    def testPackageMembers(self):
-        pass
-
 if __name__ == "__main__": #allows you to run from console or command line
 	unittest.main()
