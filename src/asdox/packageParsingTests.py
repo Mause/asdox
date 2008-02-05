@@ -44,11 +44,11 @@ class PackageParsingTestCase(unittest.TestCase):
         unamedPackage = self.builder.getPackage("").getName() #get package name
         classCount = len(self.builder.getPackage("").getClasses()) # number of classe declarations inside the package
 	includeCount = len(self.builder.getPackage("").getIncludes()) #number of included declarations inside the package
-	importCount = len(self.builder.getPackage().getImports()) # number of import statements inside the package	
-	namespaceCount = len(self.builder.getPackage().getNamespaces()) # number if namespace declarations inside the package definition
-	interfaceCount = len(self.builder.getPackage().getInterfaces()) # number of interface definitions inside the package definiton
-	#STUB variableCount = len(self.builder.getPackage().getVariables()) #number of variable declarations inside the package defintion
-	#STUB functionCount = len(self.builder.getPackage().getFunctions()) #number of variable declarations inside the package defintion
+	importCount = len(self.builder.getPackage("").getImports()) # number of import statements inside the package	
+	namespaceCount = len(self.builder.getPackage("").getNamespaces()) # number if namespace declarations inside the package definition
+	interfaceCount = len(self.builder.getPackage("").getInterfaces()) # number of interface definitions inside the package definiton
+	#STUB variableCount = len(self.builder.getPackage(self,"").getVariables()) #number of variable declarations inside the package defintion
+	#STUB functionCount = len(self.builder.getPackage(self,"").getFunctions()) #number of variable declarations inside the package defintion
 	
 #unit tests  definitons	
         self.assertEqual(unamedPackage,"","package name is not blank") #test unamed package
