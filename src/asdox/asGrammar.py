@@ -82,6 +82,12 @@ def getArgument(s,l,t):
 
 def getMetaData(s,l,t):
     meta = ASMetaTag(t.name)
+    
+    for att in t.attributes:
+	if att.key == "":
+	    meta.addParam(att.value)
+	else:
+	    meta.addParam(att.value,att.key)
     return meta
     
 COLON,LPARN,RPARN,LCURL,RCURL,EQUAL,SEMI,LSQUARE,RSQUARE = map(Suppress,":(){}=;[]")
@@ -124,9 +130,8 @@ comments = Optional( singleline_comment) + Optional( ZeroOrMore( cStyleComment )
 identifier = Word(alphas + '_',alphanums + '_') 
 type = COLON + (identifier ^ STAR )
 
-named_attribute = identifier + EQUAL + QuotedString(quoteChar="\"", escChar='\\')
 attribute = identifier ^ QuotedString(quoteChar="\"", escChar='\\') ^ integer
-metadata_attributes = LPARN + delimitedList( attribute ^ named_attribute) + RPARN
+metadata_attributes = LPARN + delimitedList( Group(Optional(identifier("key") + EQUAL) + attribute("value")).setResultsName("attributes",listAllMatches="true") ) + RPARN
 metadata = (LSQUARE + identifier("name") + Optional( metadata_attributes ) + RSQUARE).setParseAction(getMetaData)
 
 variable_kind = VAR ^ CONST

@@ -51,8 +51,7 @@ class ClassDefinitionTestCase(BaseDefinitionTestCase):
 		self.builder.addSource("""
 		package test{
 			[Bindable]
-			[Event(name="myEnableEvent", other="flash.events.Event")]
-			[Test(true)]
+			[Event(name="myEnableEvent", type="flash.events.Event")]
 			public class MyClass
 			{
 			}
@@ -66,16 +65,14 @@ class ClassDefinitionTestCase(BaseDefinitionTestCase):
 		cls.addMetaTag( asModel.ASMetaTag("Bindable") )
 		expected.addClass(cls)
 		event = asModel.ASMetaTag("Event")
-		event.addParam(True)
 		event.addParam("myEnableEvent","name")
 		event.addParam("flash.events.Event","type")
 		expected.getClass("MyClass").addMetaTag( event )
 		#self.assertEqual(len(result),1)
 		self.pkgTest(result,expected)
-		self.assertEqual(len(result.getClass("MyClass").getMetaTags()),3)
+		self.assertEqual(len(result.getClass("MyClass").getMetaTags()),2)
 		self.metaTest(result.getClass("MyClass").getMetaTag("Bindable"),expected.getClass("MyClass").getMetaTag("Bindable"))
 		self.metaTest(result.getClass("MyClass").getMetaTag("Event"),expected.getClass("MyClass").getMetaTag("Event"))
-		self.metaTest(result.getClass("MyClass").getMetaTag("Test"),expected.getClass("MyClass").getMetaTag("Test"))
 class PackageDefinitionTestCase(BaseDefinitionTestCase):
 	
 	def testDefaultPackage(self):
