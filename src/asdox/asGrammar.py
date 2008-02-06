@@ -50,7 +50,8 @@ def getClass( s,l,t ):
 	    cls.addField(f[0])
     if len(t.methods) > 0:
 	for m in t.methods:
-	    cls.addMethods(m[0])
+	    print m[0]
+	    cls.addMethod(m[0])
     if len(t.meta) > 0:
 	for m in t.meta[0]:
 	    cls.addMetaTag(m)
@@ -65,19 +66,20 @@ def getField( s,l,t ):
     fld = ASField(t.name,t.type)
     for mod in t.field_modifiers:
 	fld.addModifier(mod)
-    for m in t.field_meta:
+    for m in t.metadata:
 	fld.addMetaTag(m[0])
     return fld
 def getMethod( s,l,t ):
-    fc = ASMethod(t.name)
+    fc = ASMethod(t.name[0])
     if len(t.modifiers) > 0:
 	for mod in t.modifiers[0]:
-	    fc.addModifiers (mod)
+	    fc.addModifier(mod)
     if len(t.args) > 0:
 	for arg in t.args:
 	    fc.addArgument(arg)
+    for m in t.metadata:
+	fc.addMetaTag(m[0])
     return fc
-
 def getArgument(s,l,t):
     arg = ASArg(t.name,t.type)
     return arg
@@ -156,8 +158,8 @@ extended_attributes = base_attributes ^ PRIVATE ^ PROTECTED
 class_attributes = Optional(base_attributes, "internal") + Optional( FINAL ) + Optional( DYNAMIC )
 class_block_attributes = Optional(extended_attributes, "internal") + Optional(STATIC) + Optional(PROTOTYPE)
 class_method_attributes = class_block_attributes + Optional(FINAL) + Optional(OVERRIDE) + Optional(NATIVE)
-class_variables = (ZeroOrMore(metadata).setResultsName("field_meta",listAllMatches="true") + class_block_attributes("field_modifiers") + variable_definition).setParseAction(getField)
-class_method = (ZeroOrMore(metadata) + class_method_attributes.setResultsName("modifiers",listAllMatches="true") + _function).setParseAction(getMethod)
+class_variables = (ZeroOrMore(metadata).setResultsName("metadata",listAllMatches="true") + class_block_attributes("field_modifiers") + variable_definition).setParseAction(getField)
+class_method = (ZeroOrMore(metadata).setResultsName("metadata",listAllMatches="true") + class_method_attributes.setResultsName("modifiers",listAllMatches="true") + _function).setParseAction(getMethod)
 class_block = LCURL + ZeroOrMore( Group(_include).setResultsName("class_includes",listAllMatches="true") ^ Group(class_variables).setResultsName("class_fields",listAllMatches="true") ^ Group(class_method).setResultsName("methods",listAllMatches="true")) + RCURL
 class_name = Combine(identifier + ZeroOrMore( DOT + identifier ))
 class_implements = IMPLEMENTS + delimitedList( class_name ).setResultsName("class_implements",listAllMatches="true")
