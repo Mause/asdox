@@ -65,6 +65,8 @@ def getField( s,l,t ):
     fld = ASField(t.name,t.type)
     for mod in t.field_modifiers:
 	fld.addModifier(mod)
+    for m in t.field_meta:
+	fld.addMetaTag(m[0])
     return fld
 def getMethod( s,l,t ):
     fc = ASMethod(t.name)
