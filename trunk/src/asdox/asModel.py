@@ -65,7 +65,7 @@ class Namespacable:
 	def removeNamespace(self,name):
 		del self.__namespaces[name]
 	def getNamespace(self,name):
-		return self.__namespace.get(name,ASNamespace(""))
+		return self.__namespace.get(name,None)
 	def useNamespace(self,name):
 		self.__used_namespaces.add(name)
 	def unUseNamespace(self,name):
@@ -112,15 +112,15 @@ class Typeable:
 		return self.__type
 class MetaTagable:
 	"Actionscript Object that allows for MetaTags"
-	__metaTag = dict()
+	__metaTags = dict()
 	def __init__(self):
-		self.__metaTag = dict()
+		self.__metaTags = dict()
 	def addMetaTag(self,tag):
 		self.__metaTags[tag.getName()] = tag
 	def removeMetaTag(self,name):
 		del self.__metaTags[name]
 	def getMetaTag(self,name):
-		return self.__metaTags.get(name,ASMetaTag(""))
+		return self.__metaTags.get(name,None)
 	def getMetaTags(self):
 		return self.__metaTags
 class ASMetaTag(Typeable):
@@ -156,7 +156,7 @@ class ASPackage(Typeable,Includable,Namespacable):
 	def removeClass(self,name):
 		del self.__classes[name]
 	def getClass(self,name):
-		return self.__classes.get(name,ASClass(""))
+		return self.__classes.get(name,None)
 	def getClasses(self):
 		return self.__classes
 	def addImport(self,name):
@@ -189,7 +189,7 @@ class ASClass(Typeable,Modifiable,MetaTagable,Documentable,Includable,Namespacab
 	def removeField(self,name):
 		del self.__fields[name]
 	def getField(self,name):
-		return self.__fields.get(name,ASField(""))
+		return self.__fields.get(name,None)
 	def getFields(self):
 		return self.__fields
 	def addMethod(self,method):
@@ -197,7 +197,7 @@ class ASClass(Typeable,Modifiable,MetaTagable,Documentable,Includable,Namespacab
 	def removeMethod(self,name):
 		del self.__methods[name]
 	def getMethod(self,name):
-		return self.__methods.get(name,ASMethod(""))
+		return self.__methods.get(name,None)
 	def getMethods(self):
 		return self.__methods
 	def getExtends(self):
@@ -259,6 +259,6 @@ class ASMethod(Typeable,Modifiable,MetaTagable,Documentable,NamespaceModifiable)
 	def removeArgument(self,name):
 		del self.__args[name]
 	def getArgument(self,name):
-		return self.__args.get(name,ASArg(""))
+		return self.__args.get(name,None)
 	def getArguments(self):
 		return self.__args
