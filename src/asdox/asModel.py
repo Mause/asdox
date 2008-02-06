@@ -65,7 +65,9 @@ class Namespacable:
 	def removeNamespace(self,name):
 		del self.__namespaces[name]
 	def getNamespace(self,name):
-		return self.__namespace.get(name,None)
+		return self.__namespaces.get(name,None)
+	def getNamespaces(self):
+		return self.__namespaces
 	def useNamespace(self,name):
 		self.__used_namespaces.add(name)
 	def unUseNamespace(self,name):
