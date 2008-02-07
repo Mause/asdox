@@ -125,6 +125,8 @@ class MetaTagable:
 		return self.__metaTags.get(name,None)
 	def getMetaTags(self):
 		return self.__metaTags
+	def hasMetaTag(self,name):
+		return name in self.__metaTags
 class ASMetaTag(Typeable):
 	"Actionscript MetaTag Definition"
 	__params = dict()
@@ -138,9 +140,11 @@ class ASMetaTag(Typeable):
 		else:
 			self.__params[key] = value
 	def getParam(self,name):
-		return self.__param[name]
+		return self.__params[name]
 	def getParams(self):
 		return self.__params
+	def hasParam(self,name):
+		return name in self.__params
 class ASPackage(Typeable,Includable,Namespacable):
 	"Actionscript Package Definition"
 	__classes = dict()
@@ -161,6 +165,8 @@ class ASPackage(Typeable,Includable,Namespacable):
 		return self.__classes.get(name,None)
 	def getClasses(self):
 		return self.__classes
+	def hasClass(self,name):
+		return name in self.__classes
 	def addImport(self,name):
 		self.__imports.add(name)
 	def removeImport(self,name):
