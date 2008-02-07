@@ -24,3 +24,33 @@
 # LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+import unittest
+from resources import *.as
+from asDox import asBuilder,asModel
+
+class asDoxParserTestCase(unittest.TestCase):
+
+	def setup(self):
+		self.builder = asBuilder.Builder()
+		
+	def tearDown(self):
+		pass
+		
+	def testUnamedPackage(self):
+		
+		self.builder.addSource(UnnamedPackage.as)
+		
+		assertEqual(self.builder.getPackage().getName(),"","Failed to parse unamed package from source file")
+		
+	def testNamedPackage(self):
+	
+		self.builder.addSource(NamedPackage.as)
+		
+		assertEqual(self.builder.getPackage().getName(),"mx.controls"," package name 'mx.controls' was not found in source")
+		
+	def testSingleClassDefintion(self):
+	
+		self.builder.addSource(SingleClassDefinition.as)
+		
+		assertEqual(self.builder.getClass().getName(),"MyClass","class name 'MyClass' was not found in package definition")
