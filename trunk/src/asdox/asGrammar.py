@@ -128,8 +128,8 @@ number = Word(nums)
 integer = Combine( Optional(plusorminus) + number )
 floatnumber = Combine( integer + Optional( point + Optional(number) ) + Optional( e + integer ) )
 
-singleline_comment = ZeroOrMore( "//" + restOfLine )
-comments = Optional( singleline_comment) + Optional( ZeroOrMore( cStyleComment ) )
+singleline_comment = "//" + restOfLine
+comment = (singleline_comment ^ cStyleComment).suppress()
 
 identifier = Word(alphas + '_',alphanums + '_') 
 type = COLON + (identifier ^ STAR )
@@ -159,16 +159,16 @@ class_attributes = Optional(base_attributes, "internal") + Optional( FINAL ) + O
 class_block_attributes = Optional(extended_attributes, "internal") + Optional(STATIC) + Optional(PROTOTYPE)
 class_method_attributes = class_block_attributes + Optional(FINAL) + Optional(OVERRIDE) + Optional(NATIVE)
 class_variables = (ZeroOrMore(metadata).setResultsName("metadata",listAllMatches="true") + class_block_attributes("field_modifiers") + variable_definition).setParseAction(getField)
-class_method = (ZeroOrMore(metadata).setResultsName("metadata",listAllMatches="true") + class_method_attributes.setResultsName("modifiers",listAllMatches="true") + _function).setParseAction(getMethod)
+class_method = (ZeroOrMore(metadata ^ comment).setResultsName("metadata",listAllMatches="true") + class_method_attributes.setResultsName("modifiers",listAllMatches="true") + _function).setParseAction(getMethod)
 class_block = LCURL + ZeroOrMore( Group(_include).setResultsName("class_includes",listAllMatches="true") ^ Group(class_variables).setResultsName("class_fields",listAllMatches="true") ^ Group(class_method).setResultsName("methods",listAllMatches="true")) + RCURL
 class_name = Combine(identifier + ZeroOrMore( DOT + identifier ))
 class_implements = IMPLEMENTS + delimitedList( class_name ).setResultsName("class_implements",listAllMatches="true")
 class_extends = EXTENDS + class_name("extends")
 class_inheritance = Optional( class_extends ) + Optional( class_implements )
-classDef = (ZeroOrMore(metadata).setResultsName("meta",listAllMatches="true") + class_attributes("class_modifiers") + CLASS("type") + class_name("name") + class_inheritance + class_block).setParseAction(getClass)
+classDef = (ZeroOrMore(metadata ^ comment).setResultsName("meta",listAllMatches="true") + class_attributes("class_modifiers") + CLASS("type") + class_name("name") + class_inheritance + class_block).setParseAction(getClass)
 _interface = Optional( base_attributes ) + INTERFACE + class_name + Optional( class_extends ) + LCURL + ZeroOrMore( function_signature ) + RCURL
 
 package_block = LCURL + ZeroOrMore( Group(_import).setResultsName("imports",listAllMatches="true") ^ Group(_include).setResultsName("includes",listAllMatches="true") ^ Group(classDef).setResultsName("class_definitions",listAllMatches="true") ) + RCURL
-packageDef = (PACKAGE("type") + Optional( package_name("name") ) + package_block).setParseAction(getPackage)
+packageDef = ( ZeroOrMore(comment) + PACKAGE("type") + Optional( package_name("name") ) + package_block).setParseAction(getPackage)
 
 source = ZeroOrMore( packageDef ^ _import ^ _include ^ _function )
