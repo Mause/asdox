@@ -59,22 +59,36 @@ class ClassDefinitionTestCase(BaseDefinitionTestCase):
 			}
 		}
 		""")
-		
-		result = self.builder.getPackage("test")
-		expected = asModel.ASPackage("test")
-		cls = asModel.ASClass("MyClass")
-		cls.addModifier("public")
-		cls.addMetaTag( asModel.ASMetaTag("Bindable") )
-		expected.addClass(cls)
-		event = asModel.ASMetaTag("Event")
-		event.addParam("myEnableEvent","name")
-		event.addParam("flash.events.Event","type")
-		expected.getClass("MyClass").addMetaTag( event )
-		#self.assertEqual(len(result),1)
-		self.pkgTest(result,expected)
-		self.assertEqual(len(result.getClass("MyClass").getMetaTags()),2)
-		self.metaTest(result.getClass("MyClass").getMetaTag("Bindable"),expected.getClass("MyClass").getMetaTag("Bindable"))
-		self.metaTest(result.getClass("MyClass").getMetaTag("Event"),expected.getClass("MyClass").getMetaTag("Event"))
+		# Test Package 'test'
+		self.assertEqual(self.builder.hasPackage("test"),True,"Package 'test' not found.")
+		pkg = self.builder.getPackage("test")
+		self.assertEqual(pkg.getName(),"test","Package name not equal to 'test'.")
+		self.assertEqual(pkg.getType(),"package","Package type not equal to 'package'.")
+		# Test Class 'MyClass'
+		self.assertEqual(pkg.hasClass("MyClass"),True,"Class 'MyClass' not found.")
+		cls = pkg.getClass("MyClass")
+		self.assertEqual(cls.isPublic(),True,"Class is not public")
+		self.assertEqual(cls.getName(),"MyClass","Class name not equal to 'MyClass'.")
+		self.assertEqual(cls.isDynamic(),False,"Class should not be dynamic.")
+		self.assertEqual(cls.isFinal(),False,"Class should not be final.")
+		self.assertEqual(len(cls.getFields()),0,"Class should contain no fields.")
+		self.assertEqual(len(cls.getMethods()),0,"Class should contain no methods.")
+		# Test MetaTags 'Bindable'
+		self.assertEqual(cls.hasMetaTag("Bindable"),True,"MetaTag 'Bindable' not found.")
+		meta = cls.getMetaTag("Bindable")
+		self.assertEqual(meta.getName(),"Bindable","MetaTag name not equal to 'Bindable'.")
+		self.assertEqual(meta.getType(),"metatag","MetaTag type not equal to 'metatag'.")
+		self.assertEqual(len(meta.getParams()),0,"'Bindable' MetaTag should not contain any parameters.")
+		# Test MetaTag 'Event'
+		self.assertEqual(cls.hasMetaTag("Event"),True,"MetaTag 'Event' not found.")
+		meta = cls.getMetaTag("Event")
+		self.assertEqual(meta.getName(),"Event","MetaTag name not equal to 'Event'.")
+		self.assertEqual(meta.getType(),"metatag","MetaTag type not equal to 'metatag'.")
+		self.assertEqual(len(meta.getParams()),2,"'Event' MetaTag should contain 2 parameters.")
+		self.assertEqual(meta.hasParam("name"),True,"'Event' MetaTag should have 'name' parameter.")
+		self.assertEqual(meta.getParam("name"),"myEnableEvent","'name' parameter should equal 'myEnableEvent'.")
+		self.assertEqual(meta.hasParam("type"),True,"'Event' MetaTag should have 'type' parameter.")
+		self.assertEqual(meta.getParam("type"),"flash.events.Event","'type' parameter should equal 'flash.events.Event'.")
 class PackageDefinitionTestCase(BaseDefinitionTestCase):
 	
 	def testDefaultPackage(self):
