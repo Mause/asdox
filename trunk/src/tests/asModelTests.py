@@ -25,7 +25,10 @@
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import unittest,asModel
+import unittest,sys,os
+sys.path.append( os.path.abspath('../') )
+from asdox import asModel
+
 class ASClassTestCase(unittest.TestCase):
 	def testClassContructor(self):
 		cls = asModel.ASClass();
