@@ -24,7 +24,9 @@
 # LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-import unittest,asBuilder,asModel,os.path,sys
+import unittest,sys,os
+sys.path.append( os.path.abspath('../') )
+from asdox import asModel,asBuilder
 
 class BaseDefinitionTestCase(unittest.TestCase):
 	def setUp(self):
