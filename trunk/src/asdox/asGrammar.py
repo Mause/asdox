@@ -50,7 +50,6 @@ def getClass( s,l,t ):
 	    cls.addField(f[0])
     if len(t.methods) > 0:
 	for m in t.methods:
-	    print m[0]
 	    cls.addMethod(m[0])
     if len(t.meta) > 0:
 	for m in t.meta[0]:
@@ -139,10 +138,10 @@ metadata_attributes = LPARN + delimitedList( Group(Optional(identifier("key") + 
 metadata = (LSQUARE + identifier("name") + Optional( metadata_attributes ) + RSQUARE).setParseAction(getMetaData)
 
 variable_kind = VAR ^ CONST
-variable_init = EQUAL + Optional( QuotedString(quoteChar="\"", escChar='\\') ^ integer )
+variable_init = EQUAL + Optional( QuotedString(quoteChar="\"", escChar='\\') ^ integer  ^ identifier)
 variable = identifier("name") + Optional(type("type"),"*") + Optional( variable_init ) 
 variable_definition = variable_kind("kind") + identifier("name") + Optional(type("type"),"*") + Optional( variable_init ) + SEMI
-argument_definition = variable
+argument_definition = variable + Optional( variable_init )
 
 function_name = Optional( GET ^ SET ) + identifier
 function_block = Suppress( nestedExpr("{","}") )
@@ -160,7 +159,7 @@ class_block_attributes = Optional(extended_attributes, "internal") + Optional(ST
 class_method_attributes = class_block_attributes + Optional(FINAL) + Optional(OVERRIDE) + Optional(NATIVE)
 class_variables = (ZeroOrMore(metadata).setResultsName("metadata",listAllMatches="true") + class_block_attributes("field_modifiers") + variable_definition).setParseAction(getField)
 class_method = (ZeroOrMore(metadata ^ comment).setResultsName("metadata",listAllMatches="true") + class_method_attributes.setResultsName("modifiers",listAllMatches="true") + _function).setParseAction(getMethod)
-class_block = LCURL + ZeroOrMore( Group(_include).setResultsName("class_includes",listAllMatches="true") ^ Group(class_variables).setResultsName("class_fields",listAllMatches="true") ^ Group(class_method).setResultsName("methods",listAllMatches="true")) + RCURL
+class_block = LCURL + ZeroOrMore( comment ^ Group(_include).setResultsName("class_includes",listAllMatches="true") ^ Group(class_variables).setResultsName("class_fields",listAllMatches="true") ^ Group(class_method).setResultsName("methods",listAllMatches="true")) + RCURL
 class_name = Combine(identifier + ZeroOrMore( DOT + identifier ))
 class_implements = IMPLEMENTS + delimitedList( class_name ).setResultsName("class_implements",listAllMatches="true")
 class_extends = EXTENDS + class_name("extends")
@@ -168,7 +167,7 @@ class_inheritance = Optional( class_extends ) + Optional( class_implements )
 classDef = (ZeroOrMore(metadata ^ comment).setResultsName("meta",listAllMatches="true") + class_attributes("class_modifiers") + CLASS("type") + class_name("name") + class_inheritance + class_block).setParseAction(getClass)
 _interface = Optional( base_attributes ) + INTERFACE + class_name + Optional( class_extends ) + LCURL + ZeroOrMore( function_signature ) + RCURL
 
-package_block = LCURL + ZeroOrMore( Group(_import).setResultsName("imports",listAllMatches="true") ^ Group(_include).setResultsName("includes",listAllMatches="true") ^ Group(classDef).setResultsName("class_definitions",listAllMatches="true") ) + RCURL
+package_block = LCURL + ZeroOrMore( comment ^ Group(_import).setResultsName("imports",listAllMatches="true") ^ Group(_include).setResultsName("includes",listAllMatches="true") ^ Group(classDef).setResultsName("class_definitions",listAllMatches="true") ) + RCURL
 packageDef = ( ZeroOrMore(comment) + PACKAGE("type") + Optional( package_name("name") ) + package_block).setParseAction(getPackage)
 
 source = ZeroOrMore( packageDef ^ _import ^ _include ^ _function )
