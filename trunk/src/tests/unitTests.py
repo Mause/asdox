@@ -33,46 +33,62 @@ class ParseUnNamedPackageTestCase(unittest.TestCase):
     
     def setUp(self):
         self.builder = asBuilder.Builder()
-        self.builder.addSource()
+        self.builder.addSource("""
+                                package {
+                                
+                                }
+        
+                               """)
         
     def tearDowm(self):
         pass
     
-    def testParseUnNamdedPackage(self):
+    def testParseUnNamedPackage(self):
         
-        assertEqual(self.builder.getPackage().getName(),"","Unable to parse unnamed package")
+        self.assertEqual(self.builder.getPackage("").getName(),"","Unable to parse unnamed package")
         
 class ParseNamedPackgeTestCase(unittest.TestCase):
     
     def setUp(self):
         
         self.builder = asBuilder.Builder()
-        self.builder.addSource()
+        self.builder.addSource("""
+                                package mypackage{
+                                
+                                }
+        
+                               """)
     
     def tearDown(self):
         pass
     
     def testParseNamedPackage(self):
         
-        assertEqual(self.builder.getPackage().getPackageName(),"mx.controls"," parsere did not find package named ' mx.controls'")
+        self.assertEqual(self.builder.getPackage("mypackage").getName(),"mypackage"," parsere did not find package named 'mypackage'")
         
 class ParseClassDefinition(unittest.TestCase):
     
     def setUp(self):
         
         self.builder = asBuilder.Builder()
-        self.builder.addSource()
+        self.builder.addSource("""
+                                package {
+                                
+                                  class MyClass{
+                                  
+                                  }
+                                }
+        
+                               """)
 
     def tearDown(self):
         pass
     
     def testParseClassDefinition(self):
     
-        testUnamedPackageTestCase = unittest.FunctionTestCase(testParseUnNamedPackage,
-                                                              setUp=self.asBuilder.Builder(), 
-                                                              self.builder.addSource())
+        testUnamedPackageTestCase = unittest.FunctionTestCase(testParseUnNamedPackage)
     
-        assertEqual(self.builder.getClass().getName(),"MyClass","Parser was unable to get class name")
+        self.assertEqual(self.builder.getClass("MyClass").getName(),"MyClass","Parser was unable to get class name")
         
         
         
