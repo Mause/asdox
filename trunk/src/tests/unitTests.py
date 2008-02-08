@@ -66,14 +66,14 @@ class ParseNamedPackgeTestCase(unittest.TestCase):
         
         self.assertEqual(self.builder.getPackage("mypackage").getName(),"mypackage"," parsere did not find package named 'mypackage'")
         
-class ParseClassDefinitionTestCase(unittest.TestCase):
+class ParseClassDefinitionTestCase(ParseUnNamedPackageTestCase):
     
     def setUp(self):
         
         self.builder = asBuilder.Builder()
         self.builder.addSource("""
                                 package {
-                                 class MyClass{}
+                                 class Mylass{}
                                 }
         
                                """)
@@ -83,12 +83,12 @@ class ParseClassDefinitionTestCase(unittest.TestCase):
     
     def testParseClassDefinition(self):
     
-        testUnamedPackageTestCase = unittest.FunctionTestCase(testParseUnNamedPackage)
+        #testUnamedPackageTestCase = unittest.FunctionTestCase(self.testParseUnNamedPackage)
     
-        self.assertEqual(self.builder.getPackage("").getName(),"","Parser was unable to get class name")
+        self.assertEqual(self.builder.getClass("MyClass").getName(),"MyClass","Parser was unable to get class name")
         
         
         
-    #run at commandline
-    if __name__ == '__main__':
-        unittest.main()
+#run at commandline
+if __name__ == '__main__':
+    unittest.main()
