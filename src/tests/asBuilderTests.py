@@ -162,5 +162,12 @@ class PackageDefinitionTestCase(BaseDefinitionTestCase):
 		cls.addInclude("file1.as")
 		cls.addInclude("file2.as")
 		self.clsTest(result.getClass("MyClass"),cls)
+class ParsingExternalFileTestCase(BaseDefinitionTestCase):
+	def testFilterClassFile(self):
+		self.builder.addSource("resources/Filter.as")
+		self.assertEqual( self.builder.hasPackage("com.franklinconnections"),True,"'com.franklinconnections' package not found!")
+	def testButtonClassFile(self):
+		self.builder.addSource("resources/Button.as")
+		self.assertEqual( self.builder.hasPackage("mx.controls"),True,"'mx.controls' package not found!")
 if __name__ == "__main__":
 	unittest.main()
