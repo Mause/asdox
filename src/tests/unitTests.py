@@ -72,6 +72,7 @@ class ParseClassDefinition(unittest.TestCase):
                                                               setUp=self.asBuilder.Builder(), 
                                                               self.builder.addSource())
     
+        assertEqual(self.builder.getClass().getName(),"MyClass","Parser was unable to get class name")
         
         
         
