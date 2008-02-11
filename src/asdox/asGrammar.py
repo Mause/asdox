@@ -121,6 +121,7 @@ GET = Keyword("get")
 SET = Keyword("set")
 DOT = "."
 STAR = "*"
+TERMINATOR = SEMI ^ LineEnd()
 
 point = Literal('.')
 e = CaselessLiteral('E')
@@ -142,7 +143,7 @@ metadata = ( ZeroOrMore(comment) + LSQUARE + identifier("name") + Optional( meta
 variable_kind = VAR ^ CONST
 variable_init = EQUAL + Optional( QuotedString(quoteChar="\"", escChar='\\') ^ integer  ^ identifier)
 variable = identifier("name") + Optional(type("type"),"*") + Optional( variable_init ) 
-variable_definition = variable_kind("kind") + identifier("name") + Optional(type("type"),"*") + Optional( variable_init ) + SEMI
+variable_definition = variable_kind("kind") + identifier("name") + Optional(type("type"),"*") + Optional( variable_init ) + TERMINATOR
 argument_definition = variable + Optional( variable_init )
 
 function_name = Optional( GET ^ SET ) + identifier
@@ -152,9 +153,9 @@ function_signature = FUNCTION + function_name("name") + LPARN + Optional( functi
 _function = function_signature + function_block
 
 package_name = Combine(identifier + ZeroOrMore( DOT + (identifier ^ STAR) ))
-_include = INCLUDE + QuotedString(quoteChar="\"", escChar='\\')
-_import = IMPORT + package_name + SEMI
-use_namespace = USE + NAMESPACE + package_name + SEMI
+_include = INCLUDE + QuotedString(quoteChar="\"", escChar='\\') + TERMINATOR
+_import = IMPORT + package_name + TERMINATOR
+use_namespace = USE + NAMESPACE + package_name + TERMINATOR
 base_attributes = INTERNAL ^ PUBLIC
 extended_attributes = base_attributes ^ PRIVATE ^ PROTECTED
 class_attributes = Optional(base_attributes, "internal") + Optional( FINAL ) + Optional( DYNAMIC )
