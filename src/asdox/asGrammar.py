@@ -113,6 +113,8 @@ FINAL = Keyword("final")
 OVERRIDE = Keyword("override")
 NATIVE = Keyword("native")
 DYNAMIC = Keyword("dynamic")
+USE = Keyword("use")
+NAMESPACE = Keyword("namespace")
 VAR = Keyword("var")
 CONST = Keyword("const")
 GET = Keyword("get")
@@ -152,6 +154,7 @@ _function = function_signature + function_block
 package_name = Combine(identifier + ZeroOrMore( DOT + (identifier ^ STAR) ))
 _include = INCLUDE + QuotedString(quoteChar="\"", escChar='\\')
 _import = IMPORT + package_name + SEMI
+use_namespace = USE + NAMESPACE + package_name + SEMI
 base_attributes = INTERNAL ^ PUBLIC
 extended_attributes = base_attributes ^ PRIVATE ^ PROTECTED
 class_attributes = Optional(base_attributes, "internal") + Optional( FINAL ) + Optional( DYNAMIC )
@@ -167,7 +170,7 @@ class_inheritance = Optional( class_extends ) + Optional( class_implements )
 classDef = (ZeroOrMore(metadata ^ comment).setResultsName("meta",listAllMatches="true") + class_attributes("class_modifiers") + CLASS("type") + class_name("name") + class_inheritance + class_block).setParseAction(getClass)
 _interface = Optional( base_attributes ) + INTERFACE + class_name + Optional( class_extends ) + LCURL + ZeroOrMore( function_signature ) + RCURL
 
-package_block = LCURL + ZeroOrMore( comment ^ Group(_import).setResultsName("imports",listAllMatches="true") ^ Group(_include).setResultsName("includes",listAllMatches="true") ^ Group(classDef).setResultsName("class_definitions",listAllMatches="true") ) + RCURL
+package_block = LCURL + ZeroOrMore( comment ^ Group(_import).setResultsName("imports",listAllMatches="true") ^ Group(_include).setResultsName("includes",listAllMatches="true") ^ Group(classDef).setResultsName("class_definitions",listAllMatches="true") ^ use_namespace) + RCURL
 packageDef = ( ZeroOrMore(comment) + PACKAGE("type") + Optional( package_name("name") ) + package_block).setParseAction(getPackage)
 
 source = ZeroOrMore( packageDef ^ _import ^ _include ^ _function )
