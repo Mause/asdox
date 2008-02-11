@@ -87,7 +87,7 @@ class ASButtonTestCase(unittest.TestCase):
    
       """)
    
-      self.assertEqual(len(self.builder.getPackage("").getImports()),26,"Import statement count: "+str(len(self.builder.getPackage("").getImports()))+" Expectected 26")
+      self.assertEqual(len(self.builder.getPackage("").getImports()),26,"Unable to parse import statements "+" Expectected 26 Returned: "+str(len(self.builder.getPackage("").getImports())))
       
 #run at commandline
 if __name__ == '__main__':
