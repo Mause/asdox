@@ -28,27 +28,35 @@ import unittest,sys,os
 sys.path.append( os.path.abspath('../') )
 from asdox import asModel,asBuilder
 
-class BaseDefinitionTestCase(unittest.TestCase):
+class BaseTestCase(unittest.TestCase):
 	def setUp(self):
 		self.builder = asBuilder.Builder()
 	def tearDown(self):
 		pass
-	def pkgTest(self,result,expected):
-		self.assertEqual(result.__class__,expected.__class__)
-		self.assertEqual(result.getName(),expected.getName())
-		self.assertEqual(result.getType(),expected.getType())
-		self.assertEqual(result.getImports(),expected.getImports())
-	def clsTest(self,result,expected):
-		self.assertEqual(result.__class__,expected.__class__)
-		self.assertEqual(result.getName(),expected.getName())
-		self.assertEqual(result.getType(),expected.getType())
-		self.assertEqual(result.getModifiers(),expected.getModifiers())
-		self.assertEqual(result.getIncludes(),expected.getIncludes())
-		self.assertEqual(result.isInterface(),expected.isInterface())
-	def metaTest(self,result,expected):
-		self.assertEqual(result.getName(),expected.getName())
-		self.assertEqual(result.getParams(),expected.getParams())
-class ClassDefinitionTestCase(BaseDefinitionTestCase):
+class ASClassTestCase(BaseTestCase):
+	def testClass(self):
+		self.builder.addSource("""
+		package com.gurufaction.mypackage
+		{
+			public class MyClass
+			{
+				
+			}
+		}
+		""")
+		
+		self.assertEqual(self.builder.hasPackage("com.gurufaction.mypackage"),True,"Package 'com.gurufaction.mypackage' not found.")
+		pkg = self.builder.getPackage("com.gurufaction.mypackage")
+		self.assertEqual(pkg.hasClass("MyClass"),True,"Class 'MyClass' not found in package.")
+		cls = pkg.getClass("MyClass")
+		self.assertEqual(cls.getName(),"MyClass","Class name not equal to 'MyClass'.")
+		self.assertEqual(cls.getType(),"class","Class type not equal to 'class'.")
+		self.assertEqual(cls.isPublic(),True,"Class is not public")
+		self.assertEqual(cls.getName(),"MyClass","Class name not equal to 'MyClass'.")
+		self.assertEqual(cls.isDynamic(),False,"Class should not be dynamic.")
+		self.assertEqual(cls.isFinal(),False,"Class should not be final.")
+		self.assertEqual(len(cls.getFields()),0,"Class should contain no fields.")
+		self.assertEqual(len(cls.getMethods()),0,"Class should contain no methods.")
 	def testClassMetaData(self):
 		self.builder.addSource("""
 		package test{
@@ -67,12 +75,6 @@ class ClassDefinitionTestCase(BaseDefinitionTestCase):
 		# Test Class 'MyClass'
 		self.assertEqual(pkg.hasClass("MyClass"),True,"Class 'MyClass' not found.")
 		cls = pkg.getClass("MyClass")
-		self.assertEqual(cls.isPublic(),True,"Class is not public")
-		self.assertEqual(cls.getName(),"MyClass","Class name not equal to 'MyClass'.")
-		self.assertEqual(cls.isDynamic(),False,"Class should not be dynamic.")
-		self.assertEqual(cls.isFinal(),False,"Class should not be final.")
-		self.assertEqual(len(cls.getFields()),0,"Class should contain no fields.")
-		self.assertEqual(len(cls.getMethods()),0,"Class should contain no methods.")
 		# Test MetaTags 'Bindable'
 		self.assertEqual(cls.hasMetaTag("Bindable"),True,"MetaTag 'Bindable' not found.")
 		meta = cls.getMetaTag("Bindable")
@@ -89,38 +91,37 @@ class ClassDefinitionTestCase(BaseDefinitionTestCase):
 		self.assertEqual(meta.getParam("name"),"myEnableEvent","'name' parameter should equal 'myEnableEvent'.")
 		self.assertEqual(meta.hasParam("type"),True,"'Event' MetaTag should have 'type' parameter.")
 		self.assertEqual(meta.getParam("type"),"flash.events.Event","'type' parameter should equal 'flash.events.Event'.")
-class PackageDefinitionTestCase(BaseDefinitionTestCase):
+class ASPackageTestCase(BaseTestCase):
 	
-	def testDefaultPackage(self):
+	def testUnnamedPackage(self):
 		self.builder.addSource("""
 		package
 		{
 		}
 		""")
 		
-		result = self.builder.getPackage("")
-		#self.assertEqual(len(result),1)
-		
-		expected = asModel.ASPackage("");
-		self.pkgTest(result,expected)
-	def testPackage(self):
+		self.assertEqual(self.builder.hasPackage(""),True,"Unnamed package not found.")
+		pkg = self.builder.getPackage("")
+		self.assertEqual(pkg.getName(),"","Package name not equal to ''.")
+		self.assertEqual(pkg.getType(),"package","Package type not equal to 'package'.")
+	def testNamedPackage(self):
 		self.builder.addSource("""
-		package net.test.test
+		package com.gurufaction.asdox
 		{
 		}
 		""")
 		
-		result = self.builder.getPackage("net.test.test")
-		#self.assertEqual(len(result),1)
-		expected = asModel.ASPackage("net.test.test");
-		self.pkgTest(result,expected)
+		self.assertEqual(self.builder.hasPackage("com.gurufaction.asdox"),True,"Package 'com.gurufaction.asdox' not found.")
+		pkg = self.builder.getPackage("com.gurufaction.asdox")
+		self.assertEqual(pkg.getName(),"com.gurufaction.asdox","Package name not equal to 'com.gurufaction.asdox'.")
+		self.assertEqual(pkg.getType(),"package","Package type not equal to 'package'.")
 	def testMultiPackages(self):
 		self.builder.addSource("""
-		package com.google.code.test
+		package com.google.code.asdox
 		{
 		}
 		
-		package com.gurufaction.asDox
+		package com.gurufaction.asdox
 		{
 		}
 		
@@ -128,45 +129,124 @@ class PackageDefinitionTestCase(BaseDefinitionTestCase):
 		{
 		}
 		""")
+		self.assertEqual(len(self.builder.getPackages()),3,"Source file does not contain three packages.")
+		self.assertEqual(self.builder.hasPackage("com.google.code.asdox"),True,"Package 'com.google.code.asdox' not found.")
+		pkg = self.builder.getPackage("com.google.code.asdox")
+		self.assertEqual(pkg.getName(),"com.google.code.asdox","Package name not equal to 'com.google.code.asdox'.")
 		
-		result = self.builder.getPackages()
-		#self.assertEqual(len(result),3)
+		self.assertEqual(self.builder.hasPackage("com.gurufaction.asdox"),True,"Package 'com.gurufaction.asdox' not found.")
+		pkg = self.builder.getPackage("com.gurufaction.asdox")
+		self.assertEqual(pkg.getName(),"com.gurufaction.asdox","Package name not equal to 'com.gurufaction.asdox'.")
 		
-		expected = asModel.ASPackage("com.google.code.test");
-		self.pkgTest(result["com.google.code.test"],expected)
-		expected = asModel.ASPackage("com.gurufaction.asDox");
-		self.pkgTest(result["com.gurufaction.asDox"],expected)
-		expected = asModel.ASPackage("");
-		self.pkgTest(result[""],expected)
-	def testPackageWithClass(self):
+		self.assertEqual(self.builder.hasPackage(""),True,"Package '' not found.")
+		pkg = self.builder.getPackage("")
+		self.assertEqual(pkg.getName(),"","Package name not equal to ''.")
+	def testPackageImports(self):
+		"Parse Package with Import definitions."
 		self.builder.addSource("""
-		package com.gurufaction.mypackage
+		package com.gurufaction.asdox
 		{
-			public class MyClass
-			{
-				include "file1.as"
-				include "file2.as"
-				public var test:String;
-			}
+			import flash.display.DisplayObject;
+			import flash.events.Event;
+			import flash.events.FocusEvent;
+			import flash.events.KeyboardEvent;
+			import flash.events.MouseEvent;
+			import flash.events.TimerEvent;
 		}
 		""")
 		
-		result = self.builder.getPackage("com.gurufaction.mypackage")
-		self.assertNotEqual( result,None)
+		self.assertEqual(self.builder.hasPackage("com.gurufaction.asdox"),True,"Package 'com.gurufaction.asdox' not found.")
+		pkg = self.builder.getPackage("com.gurufaction.asdox")
+		self.assertEqual(len(pkg.getImports()),6,"Package does not contain six import statements.")
+	def testPackageSinglelineComments(self):
+		self.builder.addSource("""
+		package com.gurufaction.asdox
+		{
+			//--------------------------------------
+			//  Events
+			//--------------------------------------
+
+			//--------------------------------------
+			//  Styles
+			//--------------------------------------
+		}
+		""")
 		
-		expected = asModel.ASPackage("com.gurufaction.mypackage");
-		self.pkgTest(result,expected)
+		self.assertEqual(self.builder.hasPackage("com.gurufaction.asdox"),True,"Package 'com.gurufaction.asdox' not found.")
+		pkg = self.builder.getPackage("com.gurufaction.asdox")
+	def testPackageMultilineComments(self):
+		self.builder.addSource("""
+		package com.gurufaction.asdox
+		{
+			/*****
+			*
+			* Testing Multiline Comments
+			* inside package definition.
+			*
+			******/
+		}
+		""")
 		
-		cls = asModel.ASClass("MyClass");
-		cls.addModifier("public")
-		cls.addInclude("file1.as")
-		cls.addInclude("file2.as")
-		self.clsTest(result.getClass("MyClass"),cls)
-class ParsingExternalFileTestCase(BaseDefinitionTestCase):
+		self.assertEqual(self.builder.hasPackage("com.gurufaction.asdox"),True,"Package 'com.gurufaction.asdox' not found.")
+		pkg = self.builder.getPackage("com.gurufaction.asdox")
+	def testPackageComments(self):
+		self.builder.addSource("""
+		package com.gurufaction.asdox
+		{
+			/**
+			* First Multiline Comment
+			**/
+			
+			// First Singleline Comment
+			
+			/**
+			* Second Multiline Comment
+			**/
+			
+			// Second Singleline Comment
+		}
+		""")
+		
+		self.assertEqual(self.builder.hasPackage("com.gurufaction.asdox"),True,"Package 'com.gurufaction.asdox' not found.")
+		pkg = self.builder.getPackage("com.gurufaction.asdox")
+	def testPackageNamespace(self):
+		"Parse Package with namespace declaration."
+		self.builder.addSource("""
+		package com.gurufaction.asdox
+		{
+			use namespace mx_internal;
+		}
+		""")
+		
+		self.assertEqual(self.builder.hasPackage("com.gurufaction.asdox"),True,"Package 'com.gurufaction.asdox' not found.")
+		pkg = self.builder.getPackage("com.gurufaction.asdox")
+	def testSourceFileComment(self):
+		"Parse Package with leading comment."
+		self.builder.addSource("""
+		////////////////////////////////////////////////////////////////////////////////
+		//
+		//  Copyright (C) 2003-2006 Adobe Macromedia Software LLC and its licensors.
+		//  All Rights Reserved. The following is Source Code and is subject to all
+		//  restrictions on such code as contained in the End User License Agreement
+		//  accompanying this product.
+		//
+		////////////////////////////////////////////////////////////////////////////////
+		
+		package com.gurufaction.asdox
+		{
+			
+		}
+		""")
+		
+		self.assertEqual(self.builder.hasPackage("com.gurufaction.asdox"),True,"Package 'com.gurufaction.asdox' not found.")
+		pkg = self.builder.getPackage("com.gurufaction.asdox")
+class ParsingExternalFileTestCase(BaseTestCase):
 	def testFilterClassFile(self):
+		"Load and Parse Filter.as source file."
 		self.builder.addSource("resources/Filter.as")
 		self.assertEqual( self.builder.hasPackage("com.franklinconnections"),True,"'com.franklinconnections' package not found!")
 	def testButtonClassFile(self):
+		"Load and Parse Button.as source file."
 		self.builder.addSource("resources/Button.as")
 		self.assertEqual( self.builder.hasPackage("mx.controls"),True,"'mx.controls' package not found!")
 if __name__ == "__main__":
