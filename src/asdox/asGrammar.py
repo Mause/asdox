@@ -32,10 +32,10 @@ def getPackage( s,l,t ):
     if len(t.class_definitions) > 0:
 	for cls in t.class_definitions[0]:
 	    pkg.addClass( cls )
-	for imp in t.imports:
-	    pkg.addImport(imp)
-	for inc in t.includes:
-	    pkg.addInclude(inc)
+    for imp in t.imports:
+	pkg.addImport(imp)
+    for inc in t.includes:
+	pkg.addInclude(inc)
     return pkg
 
 def getClass( s,l,t ):
