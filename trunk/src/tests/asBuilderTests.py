@@ -323,5 +323,37 @@ class ParsingExternalFileTestCase(BaseTestCase):
 		"Load and Parse Button.as source file."
 		self.builder.addSource("resources/Button.as")
 		self.assertEqual( self.builder.hasPackage("mx.controls"),True,"'mx.controls' package not found!")
+		
+		
+class ClassFieldsTestCase(unittest.TestCase):
+	
+	def setUp(self):
+		
+		self.builder = asBuilder.Builder()
+	
+	
+	def tearDown(self):
+		pass
+	
+	def testClassField(self):
+		pass
+	
+	def testConstantClassField(self):
+		pass
+	
+	def testStaticClassField(self):
+		pass
+	
+	def testClassModifiers(self):
+		pass
+	
+	def testJavaDocWithClassFields(self):
+		pass
+	
+	def testClassFieldWithMetaData(self):
+		pass
+	
+
+		
 if __name__ == "__main__":
 	unittest.main()
