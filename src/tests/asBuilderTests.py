@@ -98,6 +98,7 @@ class ASClassTestCase(BaseTestCase):
 		package test{
 			[Bindable]
 			[Event(name="myEnableEvent", type="flash.events.Event")]
+			[DefaultTriggerEvent("click")]
 			public class MyClass
 			{
 			}
@@ -127,6 +128,28 @@ class ASClassTestCase(BaseTestCase):
 		self.assertEqual(meta.getParam("name"),"myEnableEvent","'name' parameter should equal 'myEnableEvent'.")
 		self.assertEqual(meta.hasParam("type"),True,"'Event' MetaTag should have 'type' parameter.")
 		self.assertEqual(meta.getParam("type"),"flash.events.Event","'type' parameter should equal 'flash.events.Event'.")
+		# Test MetaTag 'DefaultTriggerEvent'
+		self.assertEqual(cls.hasMetaTag("DefaultTriggerEvent"),True,"MetaTag 'Event' not found.")
+		meta = cls.getMetaTag("DefaultTriggerEvent")
+		self.assertEqual(meta.getName(),"DefaultTriggerEvent","MetaTag name not equal to 'DefaultTriggerEvent'.")
+		self.assertEqual(meta.getType(),"metatag","MetaTag type not equal to 'metatag'.")
+		self.assertEqual(len(meta.getParams()),1,"'DefaultTriggerEvent' MetaTag should contain one parameters.")
+		self.assertEqual(meta.getParam(0),"click","Parameter should equal 'click'.")
+	def testClassInclude(self):
+		"Parse Class with Include statement"
+		self.builder.addSource("""
+		package com.gurufaction.mypackage
+		{
+			public class MyClass
+			{
+				include "../core/Version.as";
+			}
+		}
+		""")
+		self.assertEqual(self.builder.hasPackage("com.gurufaction.mypackage"),True,"Package 'com.gurufaction.mypackage' not found.")
+		pkg = self.builder.getPackage("com.gurufaction.mypackage")
+		self.assertEqual(pkg.hasClass("MyClass"),True,"Class 'MyClass' not found in package.")
+		cls = pkg.getClass("MyClass")
 class ASPackageTestCase(BaseTestCase):
 	
 	def testUnnamedPackage(self):
@@ -251,6 +274,21 @@ class ASPackageTestCase(BaseTestCase):
 		package com.gurufaction.asdox
 		{
 			use namespace mx_internal;
+		}
+		""")
+		
+		self.assertEqual(self.builder.hasPackage("com.gurufaction.asdox"),True,"Package 'com.gurufaction.asdox' not found.")
+		pkg = self.builder.getPackage("com.gurufaction.asdox")
+	def testPackageIncludes(self):
+		"Parse Package with include statements."
+		self.builder.addSource("""
+		package com.gurufaction.asdox
+		{
+			include "../styles/metadata/FocusStyles.as"
+			include "../styles/metadata/LeadingStyle.as"
+			include "../styles/metadata/PaddingStyles.as"
+			include "../styles/metadata/SkinStyles.as"
+			include "../styles/metadata/TextStyles.as"
 		}
 		""")
 		
