@@ -57,6 +57,42 @@ class ASClassTestCase(BaseTestCase):
 		self.assertEqual(cls.isFinal(),False,"Class should not be final.")
 		self.assertEqual(len(cls.getFields()),0,"Class should contain no fields.")
 		self.assertEqual(len(cls.getMethods()),0,"Class should contain no methods.")
+	def testClassMetadataJavaDocComment(self):
+		self.builder.addSource("""
+		package test
+		{
+			/**
+			*  Dispatched when the user presses the Button control.
+			*  If the <code>autoRepeat</code> property is <code>true</code>,
+			*  this event is dispatched repeatedly as long as the button stays down.
+			*
+			*  @eventType mx.events.FlexEvent.BUTTON_DOWN
+			*/
+			
+			[Event(name="buttonDown", type="mx.events.FlexEvent")]
+			public class MyClass
+			{
+			}
+		}
+		""")
+		# Test Package 'test'
+		self.assertEqual(self.builder.hasPackage("test"),True,"Package 'test' not found.")
+		pkg = self.builder.getPackage("test")
+		self.assertEqual(pkg.getName(),"test","Package name not equal to 'test'.")
+		self.assertEqual(pkg.getType(),"package","Package type not equal to 'package'.")
+		# Test Class 'MyClass'
+		self.assertEqual(pkg.hasClass("MyClass"),True,"Class 'MyClass' not found.")
+		cls = pkg.getClass("MyClass")
+		# Test MetaTag 'Event'
+		self.assertEqual(cls.hasMetaTag("Event"),True,"MetaTag 'Event' not found.")
+		meta = cls.getMetaTag("Event")
+		self.assertEqual(meta.getName(),"Event","MetaTag name not equal to 'Event'.")
+		self.assertEqual(meta.getType(),"metatag","MetaTag type not equal to 'metatag'.")
+		self.assertEqual(len(meta.getParams()),2,"'Event' MetaTag should contain 2 parameters.")
+		self.assertEqual(meta.hasParam("name"),True,"'Event' MetaTag should have 'name' parameter.")
+		self.assertEqual(meta.getParam("name"),"buttonDown","'name' parameter should equal 'buttonDown'.")
+		self.assertEqual(meta.hasParam("type"),True,"'Event' MetaTag should have 'type' parameter.")
+		self.assertEqual(meta.getParam("type"),"mx.events.FlexEvent","'type' parameter should equal 'mx.events.FlexEvent'.")
 	def testClassMetaData(self):
 		self.builder.addSource("""
 		package test{
@@ -178,12 +214,12 @@ class ASPackageTestCase(BaseTestCase):
 		self.builder.addSource("""
 		package com.gurufaction.asdox
 		{
-			/*****
+			/*
 			*
 			* Testing Multiline Comments
 			* inside package definition.
 			*
-			******/
+			*/
 		}
 		""")
 		
@@ -193,15 +229,15 @@ class ASPackageTestCase(BaseTestCase):
 		self.builder.addSource("""
 		package com.gurufaction.asdox
 		{
-			/**
+			/*
 			* First Multiline Comment
-			**/
+			*/
 			
 			// First Singleline Comment
 			
-			/**
+			/*
 			* Second Multiline Comment
-			**/
+			*/
 			
 			// Second Singleline Comment
 		}

@@ -137,7 +137,7 @@ type = COLON + (identifier ^ STAR )
 
 attribute = identifier ^ QuotedString(quoteChar="\"", escChar='\\') ^ integer
 metadata_attributes = LPARN + delimitedList( Group(Optional(identifier("key") + EQUAL) + attribute("value")).setResultsName("attributes",listAllMatches="true") ) + RPARN
-metadata = (LSQUARE + identifier("name") + Optional( metadata_attributes ) + RSQUARE).setParseAction(getMetaData)
+metadata = ( ZeroOrMore(comment) + LSQUARE + identifier("name") + Optional( metadata_attributes ) + RSQUARE).setParseAction(getMetaData)
 
 variable_kind = VAR ^ CONST
 variable_init = EQUAL + Optional( QuotedString(quoteChar="\"", escChar='\\') ^ integer  ^ identifier)
