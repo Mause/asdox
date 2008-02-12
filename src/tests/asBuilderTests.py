@@ -341,7 +341,7 @@ class ASFieldTestCase(BaseTestCase):
 		}
 		""")
 		
-		self.assertEqual(self.builder.hasPackage(""),True,"Unnamed package not found")#test for valid package
+		self.assertEqual(self.builder.hasPackage(""),True,"Unnamed package not found in testClassField")#test for valid package
 		
 		pkg = self.builder.getPackage("")#get unnamed package
 		self.assertEqual(pkg.hasClass("MyClass"),True,"Package does not have a class defined")#test that a class has been declared
@@ -354,10 +354,54 @@ class ASFieldTestCase(BaseTestCase):
 
 		
 	def testConstantClassField(self):
-		pass
+
+		self.builder.addSource(""" 
+		package {
+		
+		   class MyClass{
+		   
+		     var const PI:Number;
+		     
+		     
+		     }
+		}
+		""")
+		
+		self.assertEqual(self.builder.hasPackage(""),True,"Unnamed package not found in testConstantClassField")#test for valid package
+		
+		pkg = self.builder.getPackage("")#get unnamed package
+		self.assertEqual(pkg.hasClass("MyClass"),True,"Package does not have a class defined")#test that a class has been declared
+		
+		cls = pkg.getClass("MyClass")# get class 'MyClass'
+		
+		self.assertEqual(cls.hasField("PI"),True,"'PI' field not found")#test for field in in class called 'PI'
+		self.assertEqual(cls.getField("PI").hasModifier("const"),True,"No Internal modifier found in field")#test for internal modifier in 'PI' field
+		self.assertEqual(pkg.getClass("MyClass").getField("PI").getType(),"Number","field was not of type DateTime")#test that 'PI' field is of type DateTime
 	
 	def testStaticClassField(self):
-		pass
+		
+		self.builder.addSource(""" 
+		package {
+		
+		   class MyClass{
+		   
+		     var static count:int;
+		     
+		     
+		     }
+		}
+		""")
+		
+		self.assertEqual(self.builder.hasPackage(""),True,"Unnamed package not found in testStaticClassField")#test for valid package
+		
+		pkg = self.builder.getPackage("")#get unnamed package
+		self.assertEqual(pkg.hasClass("MyClass"),True,"Package does not have a class defined")#test that a class has been declared
+		
+		cls = pkg.getClass("MyClass")# get class 'MyClass'
+		
+		self.assertEqual(cls.hasField("count"),True,"'count' field not found")#test for field in in class called 'int'
+		self.assertEqual(cls.getField("count").hasModifier("static"),True,"No static modifier found in field")#test for internal modifier in 'int' field
+		self.assertEqual(pkg.getClass("MyClass").getField("count").getType(),"int","field was not of type int")#test that 'today' field is of type int
 	
 	def testClassModifiers(self):
 		pass
