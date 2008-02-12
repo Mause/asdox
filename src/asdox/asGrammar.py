@@ -62,7 +62,7 @@ def getClass( s,l,t ):
     cls.setExtends(t.extends)
     return cls
 def getField( s,l,t ):
-    fld = ASField(t.name,t.type)
+    fld = ASField(t.name,t.type[0])
     for mod in t.field_modifiers:
 	fld.addModifier(mod)
     for m in t.metadata:
