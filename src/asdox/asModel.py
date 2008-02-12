@@ -200,6 +200,8 @@ class ASClass(Typeable,Modifiable,MetaTagable,Documentable,Includable,Namespacab
 		return self.__fields.get(name,None)
 	def getFields(self):
 		return self.__fields
+	def hasField(self,name):
+		return name in self.__fields
 	def addMethod(self,method):
 		self.__methods[method.getName()] = method
 	def removeMethod(self,name):
@@ -208,6 +210,8 @@ class ASClass(Typeable,Modifiable,MetaTagable,Documentable,Includable,Namespacab
 		return self.__methods.get(name,None)
 	def getMethods(self):
 		return self.__methods
+	def hasMethod(self,name):
+		return name in self.__methods
 	def getExtends(self):
 		return self.__extends
 	def setExtends(self,name):
