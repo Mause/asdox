@@ -325,7 +325,7 @@ class ParsingExternalFileTestCase(BaseTestCase):
 		self.assertEqual( self.builder.hasPackage("mx.controls"),True,"'mx.controls' package not found!")
 		
 		
-class ClassFieldsTestCase(unittest.TestCase):
+class ASFieldTestCase(unittest.TestCase):
 	
 	def setUp(self):
 		
@@ -336,8 +336,29 @@ class ClassFieldsTestCase(unittest.TestCase):
 		pass
 	
 	def testClassField(self):
-		pass
-	
+		
+		self.builder.addSource(""" 
+		package {
+		
+		   class MyClass{
+		   
+		     var today:DateTime;
+
+		     
+		     }
+		}
+		""")
+		
+		self.assertEqual(self.builder.hasPackage(""),True,"Unnamed package not found")#test for valid package
+		
+		pkg = self.builder.getPackage("")#get unnamed package
+		self.assertEqual(pkg.hasClass("MyClass"),True,"Package does not have a class defined")#test that a class has been declared
+		
+		cls = self.builder.getPackage("").getClass("MyClass")# get class 'MyClass'
+		self.assertEqual(cls.hasField("today"),True,"'today' field not found")#test for field in in class called 'today'
+		self.assertEqual(cls.getField("today").hasModifier("internal"),True,"No Internal modifier found in field")#test for internal modifier in 'today' field
+		self.assertEqual(pkg.getClass("MyClass").getField("today").getType(),"DateTime","field was not of type DateTime")#test that 'today' field is of type DateTime
+		
 	def testConstantClassField(self):
 		pass
 	
