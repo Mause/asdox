@@ -25,70 +25,14 @@
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import unittest,sys,os
-sys.path.append( os.path.abspath('../') )
-from asdox import asBuilder,asModel
+import unittest
 
-class ParseUnNamedPackageTestCase(unittest.TestCase):
-    
-    def setUp(self):
-        self.builder = asBuilder.Builder()
-        self.builder.addSource("""
-                                package  {
-                                
-                                }
-        
-                               """)
-        
-    def tearDowm(self):
-        pass
-    
-    def testParseUnNamedPackage(self):
-        
-        self.assertEqual(self.builder.getPackage("").getName(),"","Unable to parse unnamed package")
-        
-class ParseNamedPackgeTestCase(unittest.TestCase):
-    
-    def setUp(self):
-        
-        self.builder = asBuilder.Builder()
-        self.builder.addSource("""
-                                package mypackage{
-                                
-                                }
-        
-                               """)
-    
-    def tearDown(self):
-        pass
-    
-    def testParseNamedPackage(self):
-        
-        self.assertEqual(self.builder.getPackage("mypackage").getName(),"mypackage"," parsere did not find package named 'mypackage'")
-        
-class ParseClassDefinitionTestCase(ParseUnNamedPackageTestCase):
-    
-    def setUp(self):
-        
-        self.builder = asBuilder.Builder()
-        self.builder.addSource("""
-                                package {
-                                 class Mylass{}
-                                }
-        
-                               """)
+def suite():
+    modules_to_test = ('asBuilderTests', 'asModelTests') # and so on
+    alltests = unittest.TestSuite()
+    for module in map(__import__, modules_to_test):
+        alltests.addTest(unittest.findTestCases(module))
+    return alltests
 
-    def tearDown(self):
-        pass
-    
-    def testParseClassDefinition(self):
-    
-        #testUnamedPackageTestCase = unittest.FunctionTestCase(self.testParseUnNamedPackage)
-    
-        self.assertEqual(self.builder.getClass("MyClass").getName(),"MyClass","Parser was unable to get class name")
-        
-        
-        
-#run at commandline
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(defaultTest='suite')
