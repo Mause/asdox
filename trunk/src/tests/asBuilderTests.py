@@ -467,7 +467,7 @@ class ASFieldTestCase(BaseTestCase):
 	def testJavaDocWithClassFields(self):
 		pass
 	
-	def testClassFieldWithMetaData(self):
+	def testMetaDataWithClassFields(self):
 		pass
 	
 
