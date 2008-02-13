@@ -30,8 +30,8 @@ from asModel import *
 def getPackage( s,l,t ):
     pkg = ASPackage(t.name)
     if len(t.class_definitions) > 0:
-	for cls in t.class_definitions[0]:
-	    pkg.addClass( cls )
+	for cls in t.class_definitions:
+	    pkg.addClass( cls[0] )
     for imp in t.imports:
 	pkg.addImport(imp)
     for inc in t.includes:
@@ -159,9 +159,9 @@ _import = IMPORT + package_name + TERMINATOR
 use_namespace = USE + NAMESPACE + package_name + TERMINATOR
 base_attributes = INTERNAL ^ PUBLIC
 extended_attributes = base_attributes ^ PRIVATE ^ PROTECTED
-class_attributes = Optional(base_attributes, "internal") + Optional( FINAL ) + Optional( DYNAMIC )
-class_block_attributes = Optional(extended_attributes, "internal") + Optional(STATIC) + Optional(PROTOTYPE)
-class_method_attributes = class_block_attributes + Optional(FINAL) + Optional(OVERRIDE) + Optional(NATIVE)
+class_attributes = Optional(base_attributes, "internal") + Optional(FINAL ^ DYNAMIC ^ (DYNAMIC + FINAL) )
+class_block_attributes = Optional(extended_attributes, "internal") + Optional(STATIC ^ PROTOTYPE ^ (STATIC + PROTOTYPE) )
+class_method_attributes = class_block_attributes + Optional(FINAL) + Optional(OVERRIDE ^ NATIVE ^ (OVERRIDE + NATIVE ) )
 class_variables = (ZeroOrMore(metadata).setResultsName("metadata",listAllMatches="true") + class_block_attributes("field_modifiers") + variable_definition).setParseAction(getField)
 class_method = (ZeroOrMore(metadata ^ comment).setResultsName("metadata",listAllMatches="true") + class_method_attributes.setResultsName("modifiers",listAllMatches="true") + _function).setParseAction(getMethod)
 class_block = LCURL + ZeroOrMore( comment ^ Group(_include).setResultsName("class_includes",listAllMatches="true") ^ Group(class_variables).setResultsName("class_fields",listAllMatches="true") ^ Group(class_method).setResultsName("methods",listAllMatches="true")) + RCURL
