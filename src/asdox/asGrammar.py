@@ -67,6 +67,7 @@ def getField( s,l,t ):
 	fld.addModifier(mod)
     for m in t.metadata:
 	fld.addMetaTag(m[0])
+    fld.addModifier(t.kind)
     return fld
 def getMethod( s,l,t ):
     fc = ASMethod(t.name[0])
