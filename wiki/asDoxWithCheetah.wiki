@@ -1,0 +1,46 @@
+#Using asDox with the Cheetah template engine
+
+= Introduction =
+
+This example shows how you can use asDox with Cheetah to create C# objects from Actionscript objects.
+
+
+= Example =
+
+{{{
+from Cheetah.Template import Template
+from asdox import asBuilder
+
+builder = asBuilder.Builder()
+builder.addSource("""
+package com.gurufaction.myApp
+{
+	public class MyClass
+        {
+        	public var name:String;
+                public var age:int;
+        }
+}
+""")
+
+pkg = builder.getPackage("com.gurufaction.myApp")
+
+c_sharp_template = """
+using System;
+
+namespace $pkg.getName()
+{
+	#for $key,$value in $pkg.getClasses().items()
+        #if $value.hasModifier("public") then 'public' else ''# class $value.getName()
+        {
+        	#for $key,$value in $value.getFields().items()
+                #if $value.hasModifier("public") then 'public' else ''# $value.getType() $value.getName();
+                #end for
+        }
+        #end for
+}
+"""
+nameSpace = {'pkg': pkg}
+t = Template(c_sharp_template, searchList=[nameSpace])
+print t
+}}}
