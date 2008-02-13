@@ -456,12 +456,17 @@ class ASFieldTestCase(BaseTestCase):
 		cls3 = pkg.getClass("MyClass3")
 		# get class 'MyClass4'
 		cls4 = pkg.getClass("MyClass4")
-		
+		#test for 'internal' class modifier
 		assertEqual(cls.hasModifier("internal"),True,"No internal class modifier found")
+		#test for public class modifer
 		assertEqual(cls1.hasModifier("public"),True,"No public class modifier found")
+		#test for dynamic class modifier
 		assertEqual(cls2.hasModifier("dynamic"),True,"No dynamic class modifer found")
+		#test for final class modifier
 		assertEqual(cls3.hasModifier("final"),True,"No final class modifer found")
+		#test for dynamic class modifier
 		assertEqual(cls4.hasModifier("dynamic"),True,"No dynamic class modifer found")
+		#test for final class modifer
 		assertEqual(cls4.hasModifier("final"),True,"No final class modifier found")
 		
 	def testJavaDocWithClassFields(self):
