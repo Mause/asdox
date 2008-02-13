@@ -32,12 +32,16 @@ using System;
 namespace $pkg.getName()
 {
 	#for $key,$value in $pkg.getClasses().items()
-        #if $value.hasModifier("public") then 'public' else ''# class $value.getName()
+        #if $value.hasModifier("public")
+        public class $value.getName()
         {
         	#for $key,$value in $value.getFields().items()
-                #if $value.hasModifier("public") then 'public' else ''# $value.getType() $value.getName();
+                #if $value.hasModifier("public")
+                public $value.getType() $value.getName();
+                #end if
                 #end for
         }
+        #end if
         #end for
 }
 """
