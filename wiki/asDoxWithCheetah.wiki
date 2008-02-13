@@ -3,7 +3,7 @@
 
 = Introduction =
 
-This example shows how you can use asDox with Cheetah to create C# objects from Actionscript objects.
+This is a very simple example of how to use asDox with Cheetah to create a C# object from an Actionscript 3 object.
 
 
 = Example =
