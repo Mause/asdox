@@ -1,3 +1,4 @@
+#labels Featured
 #Using asDox with the Cheetah template engine
 
 = Introduction =
@@ -44,7 +45,7 @@ nameSpace = {'pkg': pkg}
 t = Template(c_sharp_template, searchList=[nameSpace])
 print t
 }}}
-
+=== Output ===
 {{{
 using System;
 
