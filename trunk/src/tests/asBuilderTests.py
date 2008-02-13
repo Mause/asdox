@@ -149,8 +149,7 @@ class ASClassTestCase(BaseTestCase):
 		self.assertEqual(self.builder.hasPackage("com.gurufaction.mypackage"),True,"Package 'com.gurufaction.mypackage' not found.")
 		pkg = self.builder.getPackage("com.gurufaction.mypackage")
 		self.assertEqual(pkg.hasClass("MyClass"),True,"Class 'MyClass' not found in package.")
-		cls = pkg.getClass("MyClass")
-		
+		cls = pkg.getClass("MyClass")		
         def testClassModifiers(self):
                 "Parse class modifier"
                 self.builder.addSource(""" 
@@ -203,17 +202,17 @@ class ASClassTestCase(BaseTestCase):
                 # get class 'MyClass4'
                 cls4 = pkg.getClass("MyClass4")
                 #test for 'internal' class modifier
-                assertEqual(cls.hasModifier("internal"),True,"No internal class modifier found")
+                self.assertEqual(cls.hasModifier("internal"),True,"No internal class modifier found")
                 #test for public class modifer
-                assertEqual(cls1.hasModifier("public"),True,"No public class modifier found")
+                self.assertEqual(cls1.hasModifier("public"),True,"No public class modifier found")
                 #test for dynamic class modifier
-                assertEqual(cls2.hasModifier("dynamic"),True,"No dynamic class modifer found")
+                self.assertEqual(cls2.hasModifier("dynamic"),True,"No dynamic class modifer found")
                 #test for final class modifier
-                assertEqual(cls3.hasModifier("final"),True,"No final class modifer found")
+                self.assertEqual(cls3.hasModifier("final"),True,"No final class modifer found")
                 #test for dynamic class modifier
-                assertEqual(cls4.hasModifier("dynamic"),True,"No dynamic class modifer found")
+                self.assertEqual(cls4.hasModifier("dynamic"),True,"No dynamic class modifer found")
                 #test for final class modifer
-                assertEqual(cls4.hasModifier("final"),True,"No final class modifier found")
+                self.assertEqual(cls4.hasModifier("final"),True,"No final class modifier found")
 		
 class ASPackageTestCase(BaseTestCase):
 	
@@ -443,33 +442,6 @@ class ASFieldTestCase(BaseTestCase):
 		self.assertEqual(cls.getField("PI").isConstant(),True,"'PI' field not constant.")
 		#test that 'PI' field is of type Number
 		self.assertEqual(pkg.getClass("MyClass").getField("PI").getType(),"Number","field was not of type 'Number'.")
-	
-	def testStaticClassField(self):
-		"Parse static class field."
-		self.builder.addSource(""" 
-		package 
-		{
-			class MyClass
-			{
-				static var count:int;   
-			}
-		}
-		""")
-		#test for valid package
-		self.assertEqual(self.builder.hasPackage(""),True,"Unnamed package not found in testStaticClassField")
-		#get unnamed package
-		pkg = self.builder.getPackage("")
-		#test that a class has been declared
-		self.assertEqual(pkg.hasClass("MyClass"),True,"Package does not have a class defined")
-		# get class 'MyClass'
-		cls = pkg.getClass("MyClass")
-		#test for field in in class called 'int'
-		self.assertEqual(cls.hasField("count"),True,"'count' field not found")
-		#test for internal modifier in 'int' field
-		self.assertEqual(cls.getField("count").hasModifier("static"),True,"No 'static' modifier found in field")
-		#test that 'today' field is of type int
-		self.assertEqual(pkg.getClass("MyClass").getField("count").getType(),"int","field was not of type int")
-	
 	def testFieldModifiers(self):
 		"Parse class modifier"
 		self.builder.addSource(""" 
@@ -477,25 +449,37 @@ class ASFieldTestCase(BaseTestCase):
 		{
 		        class MyClass
 			{
+			  var iVar:String;
 			  public var name:String;
 			  private var age:int;
 			  protected var salary:Number;
 			  static var count:int;
+			  mx_internal var mx:String;
+			  
 			}
 			
 		}
 		""")
 		#test for valid package
-		#self.assertEqual(self.builder.hasPackage(""),True,"Unnamed package not found in testStaticClassField")
+		self.assertEqual(self.builder.hasPackage(""),True,"Unnamed package not found in testFieldModifiers")
 		#get unnamed package
 		pkg = self.builder.getPackage("")
 		#test that a class has been declared
-		#self.assertEqual(pkg.hasClass("MyClass"),True,"Package does not have one or more classes defined")
+		self.assertEqual(pkg.hasClass("MyClass"),True,"Package does not have one or more classes defined")
 		# get class 'MyClass'
 		cls = pkg.getClass("MyClass")
-		#test for 'internal' class modifier
-		
-
+		#test for 'internal' field modifier
+		self.assertEqual(cls.getField("iVar").hasModifier("internal"),"internal","Unable to parse 'internal' field modifier")
+		#test for 'public' field modifier
+		self.assertEqual(cls.getField("name").hasModifier("public"),"public","Unable to parse 'public' field modifier")
+		#test for 'private' field modifier
+		self.assertEqual(cls.getField("age").hasModifier("private"),"private","Unable to parse 'private' field modifier")
+		#test for 'protected' field modifier
+		self.assertEqual(cls.getField("salary").hasModifier("protected"),"protected","Unable to parse 'protected' field modifier")
+		#test for 'static' field modifier
+		self.assertEqual(cls.getField("count").hasModifier("static"),"static","Unable to parse 'static' field modifier")
+		#test for 'user_defined_namespace' field modifier
+		self.assertEqual(cls.getField("mx").hasModifier("mx_internal"),"mx_internal","Unable to parse user defined namespace 'mx_internal'")
 		
 	def testJavaDocWithClassFields(self):
 		pass
