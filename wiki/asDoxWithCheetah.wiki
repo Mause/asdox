@@ -44,3 +44,16 @@ nameSpace = {'pkg': pkg}
 t = Template(c_sharp_template, searchList=[nameSpace])
 print t
 }}}
+
+{{{
+using System;
+
+namespace com.gurufaction.myApp
+{
+        public class MyClass
+        {
+                public int age;
+                public String name;
+        }
+}
+}}}
