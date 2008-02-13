@@ -469,17 +469,17 @@ class ASFieldTestCase(BaseTestCase):
 		# get class 'MyClass'
 		cls = pkg.getClass("MyClass")
 		#test for 'internal' field modifier
-		self.assertEqual(cls.getField("iVar").hasModifier("internal"),"internal","Unable to parse 'internal' field modifier")
+		self.assertEqual(cls.getField("iVar").hasModifier("internal"),True,"Unable to parse 'internal' field modifier")
 		#test for 'public' field modifier
-		self.assertEqual(cls.getField("name").hasModifier("public"),"public","Unable to parse 'public' field modifier")
+		self.assertEqual(cls.getField("name").hasModifier("public"),True,"Unable to parse 'public' field modifier")
 		#test for 'private' field modifier
-		self.assertEqual(cls.getField("age").hasModifier("private"),"private","Unable to parse 'private' field modifier")
+		self.assertEqual(cls.getField("age").hasModifier("private"),True,"Unable to parse 'private' field modifier")
 		#test for 'protected' field modifier
-		self.assertEqual(cls.getField("salary").hasModifier("protected"),"protected","Unable to parse 'protected' field modifier")
+		self.assertEqual(cls.getField("salary").hasModifier("protected"),True,"Unable to parse 'protected' field modifier")
 		#test for 'static' field modifier
-		self.assertEqual(cls.getField("count").hasModifier("static"),"static","Unable to parse 'static' field modifier")
+		self.assertEqual(cls.getField("count").hasModifier("static"),True,"Unable to parse 'static' field modifier")
 		#test for 'user_defined_namespace' field modifier
-		self.assertEqual(cls.getField("mx").hasModifier("mx_internal"),"mx_internal","Unable to parse user defined namespace 'mx_internal'")
+		self.assertEqual(cls.getField("mx").hasModifier("mx_internal"),True,"Unable to parse user defined namespace 'mx_internal'")
 		
 	def testJavaDocWithClassFields(self):
 		pass
