@@ -406,8 +406,64 @@ class ASFieldTestCase(BaseTestCase):
 		self.assertEqual(pkg.getClass("MyClass").getField("count").getType(),"int","field was not of type int")
 	
 	def testClassModifiers(self):
-		pass
-	
+		"Parse class modifier"
+		self.builder.addSource(""" 
+		package
+		{
+		        class MyClass
+			{
+			
+			}
+			
+			public class MyClass1
+			{
+			
+			}
+			
+			dynamic class MyClass2
+			{
+			
+			}
+			
+			final class MyClass3
+			{
+			
+			}
+			
+			dynamic final class MyClass4
+			{
+			
+			}
+		}
+		""")
+		#test for valid package
+		self.assertEqual(self.builder.hasPackage(""),True,"Unnamed package not found in testStaticClassField")
+		#get unnamed package
+		pkg = self.builder.getPackage("")
+		#test that a class has been declared
+		self.assertEqual(pkg.hasClass("MyClass"),True,"Package does not have one or more classes defined")
+		self.assertEqual(pkg.hasClass("MyClass1"),True,"Package does not have one or more classes defined")
+		self.assertEqual(pkg.hasClass("MyClass2"),True,"Package does not have one or more classes defined")
+		self.assertEqual(pkg.hasClass("MyClass3"),True,"Package does not have one or more classes defined")
+		self.assertEqual(pkg.hasClass("MyClass4"),True,"Package does not have one or more classes defined")
+		# get class 'MyClass'
+		cls = pkg.getClass("MyClass")
+		# get class 'MyClass1'
+		cls1 = pkg.getClass("MyClass1")
+		# get class 'MyClass2'
+		cls2 = pkg.getClass("MyClass2")
+		# get class 'MyClass3'
+		cls3 = pkg.getClass("MyClass3")
+		# get class 'MyClass4'
+		cls4 = pkg.getClass("MyClass4")
+		
+		assertEqual(cls.hasModifier("internal"),True,"No internal class modifier found")
+		assertEqual(cls1.hasModifier("public"),True,"No public class modifier found")
+		assertEqual(cls2.hasModifier("dynamic"),True,"No dynamic class modifer found")
+		assertEqual(cls3.hasModifier("final"),True,"No final class modifer found")
+		assertEqual(cls4.hasModifier("dynamic"),True,"No dynamic class modifer found")
+		assertEqual(cls4.hasModifier("final"),True,"No final class modifier found")
+		
 	def testJavaDocWithClassFields(self):
 		pass
 	
