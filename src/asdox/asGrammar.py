@@ -27,10 +27,10 @@
 from pyparsing import *
 from asModel import *
 
-def getPackage( s,l,t ):
+def parsePackage( s,l,t ):
     pkg = ASPackage(t.name)
-    if len(t.class_definitions) > 0:
-	for cls in t.class_definitions:
+    if len(t.classes) > 0:
+	for cls in t.classes:
 	    pkg.addClass( cls[0] )
     for imp in t.imports:
 	pkg.addImport(imp)
@@ -38,7 +38,7 @@ def getPackage( s,l,t ):
 	pkg.addInclude(inc)
     return pkg
 
-def getClass( s,l,t ):
+def parseClass( s,l,t ):
     cls = ASClass(t.name)
     if t.type == "interface":
 	cls.setInterface(True)
@@ -133,8 +133,10 @@ floatnumber = Combine( integer + Optional( point + Optional(number) ) + Optional
 
 singleline_comment = "//" + restOfLine
 comment = (singleline_comment ^ cStyleComment).suppress()
+comments = ZeroOrMore( comment )
 
 identifier = Word(alphas + '_',alphanums + '_') 
+fully_qualified_identifier = Combine(identifier + ZeroOrMore( DOT + identifier ))
 type = COLON + (identifier ^ STAR )
 
 attribute = identifier ^ QuotedString(quoteChar="\"", escChar='\\') ^ integer
@@ -153,10 +155,9 @@ function_arguments = delimitedList(argument_definition.setParseAction(getArgumen
 function_signature = FUNCTION + function_name("name") + LPARN + Optional( function_arguments("args") ) + RPARN + Optional( type, "void" )("type")
 _function = function_signature + function_block
 
-package_name = Combine(identifier + ZeroOrMore( DOT + (identifier ^ STAR) ))
-_include = INCLUDE + QuotedString(quoteChar="\"", escChar='\\') + TERMINATOR
-_import = IMPORT + package_name + TERMINATOR
-use_namespace = USE + NAMESPACE + package_name + TERMINATOR
+include_definition = INCLUDE + QuotedString(quoteChar="\"", escChar='\\') + TERMINATOR
+import_definition = IMPORT + fully_qualified_identifier + Optional(DOT + STAR) + TERMINATOR
+use_namespace = USE + NAMESPACE + fully_qualified_identifier + TERMINATOR
 base_attributes = INTERNAL ^ PUBLIC
 extended_attributes = base_attributes ^ PRIVATE ^ PROTECTED
 class_attributes = Optional(base_attributes, "internal") + ( Optional(FINAL) & Optional(DYNAMIC) )
@@ -164,15 +165,18 @@ class_block_attributes = Optional(extended_attributes, "internal") &  Optional(S
 class_method_attributes = class_block_attributes &  Optional(FINAL) & Optional(OVERRIDE) & Optional(NATIVE) 
 class_variables = (ZeroOrMore(metadata).setResultsName("metadata",listAllMatches="true") + class_block_attributes("field_modifiers") + variable_definition).setParseAction(getField)
 class_method = ( ZeroOrMore(metadata).setResultsName("metadata",listAllMatches="true") + ZeroOrMore(comment) + class_method_attributes.setResultsName("modifiers",listAllMatches="true") + _function).setParseAction(getMethod)
-class_block = LCURL + ZeroOrMore( comment ^ Group(_include).setResultsName("class_includes",listAllMatches="true") ^ Group(class_variables).setResultsName("class_fields",listAllMatches="true") ^ Group(class_method).setResultsName("methods",listAllMatches="true")) + RCURL
-class_name = Combine(identifier + ZeroOrMore( DOT + identifier ))
-class_implements = IMPLEMENTS + delimitedList( class_name ).setResultsName("class_implements",listAllMatches="true")
-class_extends = EXTENDS + class_name("extends")
+class_block = LCURL + ZeroOrMore( comment ^ Group(include_definition).setResultsName("class_includes",listAllMatches="true") ^ Group(class_variables).setResultsName("class_fields",listAllMatches="true") ^ Group(class_method).setResultsName("methods",listAllMatches="true")) + RCURL
+class_implements = IMPLEMENTS + delimitedList( fully_qualified_identifier ).setResultsName("class_implements",listAllMatches="true")
+class_extends = EXTENDS + fully_qualified_identifier("extends")
 class_inheritance = Optional( class_extends ) + Optional( class_implements )
-classDef = (ZeroOrMore(metadata ^ comment).setResultsName("meta",listAllMatches="true") + class_attributes("class_modifiers") + CLASS("type") + class_name("name") + class_inheritance + class_block).setParseAction(getClass)
-_interface = Optional( base_attributes ) + INTERFACE + class_name + Optional( class_extends ) + LCURL + ZeroOrMore( function_signature ) + RCURL
+class_metadata = ZeroOrMore(metadata).setResultsName("meta",listAllMatches="true")
+class_definition = ( class_metadata + class_attributes("class_modifiers") + CLASS("type") + fully_qualified_identifier("name") + class_inheritance + class_block).setParseAction(parseClass)
+interface_definition = Optional( base_attributes ) + INTERFACE("type") + fully_qualified_identifier + Optional( class_extends ) + LCURL + ZeroOrMore( function_signature ) + RCURL
 
-package_block = LCURL + ZeroOrMore( comment ^ Group(_import).setResultsName("imports",listAllMatches="true") ^ Group(_include).setResultsName("includes",listAllMatches="true") ^ Group(classDef).setResultsName("class_definitions",listAllMatches="true") ^ use_namespace) + RCURL
-packageDef = ( ZeroOrMore(comment) + PACKAGE("type") + Optional( package_name("name") ) + package_block).setParseAction(getPackage)
+import_definitions = Group(import_definition).setResultsName("imports",listAllMatches="true")
+include_definitions = Group(include_definition).setResultsName("includes",listAllMatches="true")
+class_definitions = Group(class_definition).setResultsName("classes",listAllMatches="true")
+package_block = LCURL + ZeroOrMore(comment ^ import_definitions ^ include_definitions ^ class_definitions ^ use_namespace)  + RCURL
+package_definition = ( comments + PACKAGE("type") + Optional( fully_qualified_identifier("name") ) + package_block).setParseAction(parsePackage)
 
-source = ZeroOrMore( packageDef ^ _import ^ _include ^ _function )
+source = ZeroOrMore( package_definition )
