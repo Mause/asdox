@@ -70,7 +70,7 @@ def getField( s,l,t ):
     fld.addModifier(t.kind)
     return fld
 def getMethod( s,l,t ):
-    fc = ASMethod(t.name[0])
+    fc = ASMethod(t.name[0],t.type[0])
     if len(t.modifiers) > 0:
 	for mod in t.modifiers[0]:
 	    fc.addModifier(mod)
@@ -81,7 +81,7 @@ def getMethod( s,l,t ):
 	fc.addMetaTag(m[0])
     return fc
 def getArgument(s,l,t):
-    arg = ASArg(t.name,t.type)
+    arg = ASArg(t.name,t.type[0])
     return arg
 
 def getMetaData(s,l,t):
@@ -150,7 +150,7 @@ argument_definition = variable + Optional( variable_init )
 function_name = Optional( GET ^ SET ) + identifier
 function_block = Suppress( nestedExpr("{","}") )
 function_arguments = delimitedList(argument_definition.setParseAction(getArgument))
-function_signature = FUNCTION + function_name("name") + LPARN + Optional( function_arguments("args") ) + RPARN + Optional( type("type"), "void" )
+function_signature = FUNCTION + function_name("name") + LPARN + Optional( function_arguments("args") ) + RPARN + Optional( type, "void" )("type")
 _function = function_signature + function_block
 
 package_name = Combine(identifier + ZeroOrMore( DOT + (identifier ^ STAR) ))
@@ -160,8 +160,8 @@ use_namespace = USE + NAMESPACE + package_name + TERMINATOR
 base_attributes = INTERNAL ^ PUBLIC
 extended_attributes = base_attributes ^ PRIVATE ^ PROTECTED
 class_attributes = Optional(base_attributes, "internal") + ( Optional(FINAL) & Optional(DYNAMIC) )
-class_block_attributes = Optional(extended_attributes, "internal") + ( Optional(STATIC) & Optional(PROTOTYPE) )
-class_method_attributes = class_block_attributes + ( Optional(FINAL) & Optional(OVERRIDE) & Optional(NATIVE) )
+class_block_attributes = Optional(extended_attributes, "internal") &  Optional(STATIC) & Optional(PROTOTYPE) 
+class_method_attributes = class_block_attributes &  Optional(FINAL) & Optional(OVERRIDE) & Optional(NATIVE) 
 class_variables = (ZeroOrMore(metadata).setResultsName("metadata",listAllMatches="true") + class_block_attributes("field_modifiers") + variable_definition).setParseAction(getField)
 class_method = (ZeroOrMore(metadata ^ comment).setResultsName("metadata",listAllMatches="true") + class_method_attributes.setResultsName("modifiers",listAllMatches="true") + _function).setParseAction(getMethod)
 class_block = LCURL + ZeroOrMore( comment ^ Group(_include).setResultsName("class_includes",listAllMatches="true") ^ Group(class_variables).setResultsName("class_fields",listAllMatches="true") ^ Group(class_method).setResultsName("methods",listAllMatches="true")) + RCURL
