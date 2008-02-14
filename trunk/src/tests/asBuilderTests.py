@@ -150,6 +150,38 @@ class ASClassTestCase(BaseTestCase):
 		pkg = self.builder.getPackage("com.gurufaction.mypackage")
 		self.assertEqual(pkg.hasClass("MyClass"),True,"Class 'MyClass' not found in package.")
 		cls = pkg.getClass("MyClass")		
+	def testClassExtends(self):
+		"Parse Class with Extends"
+		self.builder.addSource("""
+		package com.gurufaction.mypackage
+		{
+			public class MyClass extends BaseClass
+			{
+				
+			}
+		}
+		""")
+		self.assertEqual(self.builder.hasPackage("com.gurufaction.mypackage"),True,"Package 'com.gurufaction.mypackage' not found.")
+		pkg = self.builder.getPackage("com.gurufaction.mypackage")
+		self.assertEqual(pkg.hasClass("MyClass"),True,"Class 'MyClass' not found in package.")
+		cls = pkg.getClass("MyClass")
+		self.assertEqual(cls.getExtends(),"BaseClass","Class 'MyClass' does not extend 'BaseClass'.")
+	def testClassImplements(self):
+		"Parse Class which implements interfaces"
+		self.builder.addSource("""
+		package com.gurufaction.mypackage
+		{
+			public class MyClass implements IWorkable, ITestable
+			{
+				
+			}
+		}
+		""")
+		self.assertEqual(self.builder.hasPackage("com.gurufaction.mypackage"),True,"Package 'com.gurufaction.mypackage' not found.")
+		pkg = self.builder.getPackage("com.gurufaction.mypackage")
+		self.assertEqual(pkg.hasClass("MyClass"),True,"Class 'MyClass' not found in package.")
+		cls = pkg.getClass("MyClass")
+		self.assertEqual(cls.getImplements(),set(['ITestable', 'IWorkable']),"Class does not implement 'ITestable' and 'IWorkable'.")
         def testClassModifiers(self):
                 "Parse class modifier"
                 self.builder.addSource(""" 
