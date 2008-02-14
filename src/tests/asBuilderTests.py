@@ -182,70 +182,116 @@ class ASClassTestCase(BaseTestCase):
 		self.assertEqual(pkg.hasClass("MyClass"),True,"Class 'MyClass' not found in package.")
 		cls = pkg.getClass("MyClass")
 		self.assertEqual(cls.getImplements(),set(['ITestable', 'IWorkable']),"Class does not implement 'ITestable' and 'IWorkable'.")
-        def testClassModifiers(self):
-                "Parse class modifier"
-                self.builder.addSource(""" 
+	def testInternalClassModifier(self):
+		"Parse for 'internal' class modifier"
+		self.builder.addSource(""" 
                 package
                 {
                         class MyClass
                         {
                         
                         }
-                        
-                        public class MyClass1
-                        {
-                        
-                        }
-                        
-                        dynamic class MyClass2
-                        {
-                        
-                        }
-                        
-                        final class MyClass3
-                        {
-                        
-                        }
-                        
-                        dynamic final class MyClass4
-                        {
-                        
-                        }
                 }
                 """)
-                #test for valid package
+		#test for valid package
                 self.assertEqual(self.builder.hasPackage(""),True,"Unnamed package not found in testStaticClassField")
                 #get unnamed package
                 pkg = self.builder.getPackage("")
                 #test that a class has been declared
                 self.assertEqual(pkg.hasClass("MyClass"),True,"Package does not have one or more classes defined")
-                self.assertEqual(pkg.hasClass("MyClass1"),True,"Package does not have one or more classes defined")
-                self.assertEqual(pkg.hasClass("MyClass2"),True,"Package does not have one or more classes defined")
-                self.assertEqual(pkg.hasClass("MyClass3"),True,"Package does not have one or more classes defined")
-                self.assertEqual(pkg.hasClass("MyClass4"),True,"Package does not have one or more classes defined")
                 # get class 'MyClass'
                 cls = pkg.getClass("MyClass")
-                # get class 'MyClass1'
-                cls1 = pkg.getClass("MyClass1")
-                # get class 'MyClass2'
-                cls2 = pkg.getClass("MyClass2")
-                # get class 'MyClass3'
-                cls3 = pkg.getClass("MyClass3")
-                # get class 'MyClass4'
-                cls4 = pkg.getClass("MyClass4")
                 #test for 'internal' class modifier
                 self.assertEqual(cls.hasModifier("internal"),True,"No internal class modifier found")
+	def testPublicClassModifier(self):
+		"Parse for 'public' class modifier"
+                self.builder.addSource(""" 
+                package
+                {
+                        
+                        public class MyClass
+                        {
+                        
+                        }
+                }
+                """)
+		#test for valid package
+                self.assertEqual(self.builder.hasPackage(""),True,"Unnamed package not found in testStaticClassField")
+                #get unnamed package
+                pkg = self.builder.getPackage("")
+                #test that a class has been declared
+                self.assertEqual(pkg.hasClass("MyClass"),True,"Package does not have one or more classes defined")
+                # get class 'MyClass'
+                cls = pkg.getClass("MyClass")
                 #test for public class modifer
-                self.assertEqual(cls1.hasModifier("public"),True,"No public class modifier found")
+                self.assertEqual(cls.hasModifier("public"),True,"No public class modifier found")
+	def testDynamicClassModifier(self):
+		"Parse for 'dynamic' class modifier"
+                self.builder.addSource(""" 
+                package
+                {
+
+                        dynamic class MyClass
+                        {
+                        
+                        }
+
+                }
+                """)
+		#test for valid package
+                self.assertEqual(self.builder.hasPackage(""),True,"Unnamed package not found in testStaticClassField")
+                #get unnamed package
+                pkg = self.builder.getPackage("")
+                #test that a class has been declared
+                self.assertEqual(pkg.hasClass("MyClass"),True,"Package does not have one or more classes defined")
+                # get class 'MyClass'
+                cls = pkg.getClass("MyClass")
                 #test for dynamic class modifier
-                self.assertEqual(cls2.hasModifier("dynamic"),True,"No dynamic class modifer found")
+                self.assertEqual(cls.hasModifier("dynamic"),True,"No dynamic class modifer found")
+	def testFinalClassModifier(self):
+		"Parse for 'final' class modifier"
+                self.builder.addSource(""" 
+                package
+                {
+                        final class MyClass
+                        {
+                        
+                        }
+                }
+                """)
+		#test for valid package
+                self.assertEqual(self.builder.hasPackage(""),True,"Unnamed package not found in testStaticClassField")
+                #get unnamed package
+                pkg = self.builder.getPackage("")
+                #test that a class has been declared
+                self.assertEqual(pkg.hasClass("MyClass"),True,"Package does not have one or more classes defined")
+                # get class 'MyClass'
+                cls = pkg.getClass("MyClass")
                 #test for final class modifier
-                self.assertEqual(cls3.hasModifier("final"),True,"No final class modifer found")
+                self.assertEqual(cls.hasModifier("final"),True,"No final class modifer found")
+	def testDynamicFinalClassModifier(self):
+		"Parse for 'dynamic final' class modifier"
+                self.builder.addSource(""" 
+                package
+                {
+                        dynamic final class MyClass
+                        {
+                        
+                        }
+                }
+                """)
+		#test for valid package
+                self.assertEqual(self.builder.hasPackage(""),True,"Unnamed package not found in testStaticClassField")
+                #get unnamed package
+                pkg = self.builder.getPackage("")
+                #test that a class has been declared
+                self.assertEqual(pkg.hasClass("MyClass"),True,"Package does not have one or more classes defined")
+                # get class 'MyClass'
+                cls = pkg.getClass("MyClass")
                 #test for dynamic class modifier
-                self.assertEqual(cls4.hasModifier("dynamic"),True,"No dynamic class modifer found")
+                self.assertEqual(cls.hasModifier("dynamic"),True,"No dynamic class modifer found")
                 #test for final class modifer
-                self.assertEqual(cls4.hasModifier("final"),True,"No final class modifier found")
-		
+                self.assertEqual(cls.hasModifier("final"),True,"No final class modifier found")
 class ASPackageTestCase(BaseTestCase):
 	
 	def testUnnamedPackage(self):
