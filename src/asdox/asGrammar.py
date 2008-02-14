@@ -42,19 +42,19 @@ def parseClass( s,l,t ):
     cls = ASClass(t.name)
     if t.type == "interface":
 	cls.setInterface(True)
-    if len(t.class_includes) > 0:
-	for inc in t.class_includes:
+    if len(t.includes) > 0:
+	for inc in t.includes:
 	    cls.addInclude(inc[0])
-    if len(t.class_fields) > 0:
-	for f in t.class_fields:
+    if len(t.fields) > 0:
+	for f in t.fields:
 	    cls.addField(f[0])
     if len(t.methods) > 0:
 	for m in t.methods:
 	    cls.addMethod(m[0])
-    if len(t.meta) > 0:
-	for m in t.meta[0]:
+    if len(t.metadata) > 0:
+	for m in t.metadata[0]:
 	    cls.addMetaTag(m)
-    for mod in t.class_modifiers:
+    for mod in t.modifiers:
 	cls.addModifier(mod)
     if len(t.class_implements) > 0:
 	for imp in t.class_implements[0]:
@@ -63,7 +63,7 @@ def parseClass( s,l,t ):
     return cls
 def getField( s,l,t ):
     fld = ASField(t.name,t.type[0])
-    for mod in t.field_modifiers:
+    for mod in t.modifiers:
 	fld.addModifier(mod)
     for m in t.metadata:
 	fld.addMetaTag(m[0])
@@ -157,24 +157,31 @@ _function = function_signature + function_block
 
 include_definition = INCLUDE + QuotedString(quoteChar="\"", escChar='\\') + TERMINATOR
 import_definition = IMPORT + fully_qualified_identifier + Optional(DOT + STAR) + TERMINATOR
+import_definitions = Group(import_definition).setResultsName("imports",listAllMatches="true")
+include_definitions = Group(include_definition).setResultsName("includes",listAllMatches="true")
+metadata_definitions = ZeroOrMore(metadata).setResultsName("metadata",listAllMatches="true")
+
+
 use_namespace = USE + NAMESPACE + fully_qualified_identifier + TERMINATOR
+# Modifier Definitions
 base_attributes = INTERNAL ^ PUBLIC
 extended_attributes = base_attributes ^ PRIVATE ^ PROTECTED
 class_attributes = Optional(base_attributes, "internal") + ( Optional(FINAL) & Optional(DYNAMIC) )
-class_block_attributes = Optional(extended_attributes, "internal") &  Optional(STATIC) & Optional(PROTOTYPE) 
+class_block_attributes = Optional(extended_attributes,"internal") &  Optional(STATIC) & Optional(PROTOTYPE) 
 class_method_attributes = class_block_attributes &  Optional(FINAL) & Optional(OVERRIDE) & Optional(NATIVE) 
-class_variables = (ZeroOrMore(metadata).setResultsName("metadata",listAllMatches="true") + class_block_attributes("field_modifiers") + variable_definition).setParseAction(getField)
-class_method = ( ZeroOrMore(metadata).setResultsName("metadata",listAllMatches="true") + ZeroOrMore(comment) + class_method_attributes.setResultsName("modifiers",listAllMatches="true") + _function).setParseAction(getMethod)
-class_block = LCURL + ZeroOrMore( comment ^ Group(include_definition).setResultsName("class_includes",listAllMatches="true") ^ Group(class_variables).setResultsName("class_fields",listAllMatches="true") ^ Group(class_method).setResultsName("methods",listAllMatches="true")) + RCURL
+
+class_variables = ( metadata_definitions + class_block_attributes("modifiers") + variable_definition).setParseAction(getField)
+class_method = ( metadata_definitions + comments + class_method_attributes.setResultsName("modifiers",listAllMatches="true") + _function).setParseAction(getMethod)
+method_definitions = Group(class_method).setResultsName("methods",listAllMatches="true")
+field_definitions = Group(class_variables).setResultsName("fields",listAllMatches="true")
+class_block = LCURL + ZeroOrMore( comment ^ include_definitions ^ field_definitions ^ method_definitions ) + RCURL
 class_implements = IMPLEMENTS + delimitedList( fully_qualified_identifier ).setResultsName("class_implements",listAllMatches="true")
 class_extends = EXTENDS + fully_qualified_identifier("extends")
 class_inheritance = Optional( class_extends ) + Optional( class_implements )
-class_metadata = ZeroOrMore(metadata).setResultsName("meta",listAllMatches="true")
-class_definition = ( class_metadata + class_attributes("class_modifiers") + CLASS("type") + fully_qualified_identifier("name") + class_inheritance + class_block).setParseAction(parseClass)
+class_definition = ( metadata_definitions + class_attributes("modifiers") + CLASS("type") + fully_qualified_identifier("name") + class_inheritance + class_block).setParseAction(parseClass)
 interface_definition = Optional( base_attributes ) + INTERFACE("type") + fully_qualified_identifier + Optional( class_extends ) + LCURL + ZeroOrMore( function_signature ) + RCURL
 
-import_definitions = Group(import_definition).setResultsName("imports",listAllMatches="true")
-include_definitions = Group(include_definition).setResultsName("includes",listAllMatches="true")
+
 class_definitions = Group(class_definition).setResultsName("classes",listAllMatches="true")
 package_block = LCURL + ZeroOrMore(comment ^ import_definitions ^ include_definitions ^ class_definitions ^ use_namespace)  + RCURL
 package_definition = ( comments + PACKAGE("type") + Optional( fully_qualified_identifier("name") ) + package_block).setParseAction(parsePackage)
