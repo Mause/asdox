@@ -302,7 +302,7 @@ class ASPackageTestCase(BaseTestCase):
 		package com.gurufaction.asdox
 		{
 			import flash.display.DisplayObject;
-			import flash.events.Event;
+			import flash.events.*;
 			import flash.events.FocusEvent;
 			import flash.events.KeyboardEvent;
 			import flash.events.MouseEvent;
