@@ -610,5 +610,65 @@ class ASMethodTestCase(BaseTestCase):
 		self.assertEqual(arg1.getType(),"int")
 		self.assertEqual(arg2.getName(),"num2")
 		self.assertEqual(arg2.getType(),"int")
+	def testMethodMultiLineComment(self):
+		"Parse class method with multi-line comment."
+		self.builder.addSource("""
+		package com.gurufaction.asdox
+		{
+			public class MyClass
+			{
+				/*
+				* Method returns empty string
+				*/
+				public function getName():String
+				{
+					return "";
+				}
+			}
+		}
+		""")
+		
+		self.assertEqual(self.builder.hasPackage("com.gurufaction.asdox"),True,"Package 'com.gurufaction.asdox' not found.")
+		pkg = self.builder.getPackage("com.gurufaction.asdox")
+		self.assertEqual(pkg.getClass("MyClass").hasMethod("getName"),True,"'getName' method not found in 'MyClass'.")
+	def testMethodSingleLineComment(self):
+		"Parse class method with single-line comment."
+		self.builder.addSource("""
+		package com.gurufaction.asdox
+		{
+			public class MyClass
+			{
+				// Method returns empty string
+				public function getName():String
+				{
+					return "";
+				}
+			}
+		}
+		""")
+		
+		self.assertEqual(self.builder.hasPackage("com.gurufaction.asdox"),True,"Package 'com.gurufaction.asdox' not found.")
+		pkg = self.builder.getPackage("com.gurufaction.asdox")
+		self.assertEqual(pkg.getClass("MyClass").hasMethod("getName"),True,"'getName' method not found in 'MyClass'.")
+	def testMethodMetadata(self):
+		"Parse class method with metadata comment."
+		self.builder.addSource("""
+		package com.gurufaction.asdox
+		{
+			public class MyClass
+			{
+				[Bindable("dataChange")]
+				[Inspectable(environment="none")]
+				public function getName():String
+				{
+					return "";
+				}
+			}
+		}
+		""")
+		
+		self.assertEqual(self.builder.hasPackage("com.gurufaction.asdox"),True,"Package 'com.gurufaction.asdox' not found.")
+		pkg = self.builder.getPackage("com.gurufaction.asdox")
+		self.assertEqual(pkg.getClass("MyClass").hasMethod("getName"),True,"'getName' method not found in 'MyClass'.")
 if __name__ == "__main__":
 	unittest.main()
