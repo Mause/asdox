@@ -163,7 +163,7 @@ class_attributes = Optional(base_attributes, "internal") + ( Optional(FINAL) & O
 class_block_attributes = Optional(extended_attributes, "internal") &  Optional(STATIC) & Optional(PROTOTYPE) 
 class_method_attributes = class_block_attributes &  Optional(FINAL) & Optional(OVERRIDE) & Optional(NATIVE) 
 class_variables = (ZeroOrMore(metadata).setResultsName("metadata",listAllMatches="true") + class_block_attributes("field_modifiers") + variable_definition).setParseAction(getField)
-class_method = (ZeroOrMore(metadata ^ comment).setResultsName("metadata",listAllMatches="true") + class_method_attributes.setResultsName("modifiers",listAllMatches="true") + _function).setParseAction(getMethod)
+class_method = ( ZeroOrMore(metadata).setResultsName("metadata",listAllMatches="true") + ZeroOrMore(comment) + class_method_attributes.setResultsName("modifiers",listAllMatches="true") + _function).setParseAction(getMethod)
 class_block = LCURL + ZeroOrMore( comment ^ Group(_include).setResultsName("class_includes",listAllMatches="true") ^ Group(class_variables).setResultsName("class_fields",listAllMatches="true") ^ Group(class_method).setResultsName("methods",listAllMatches="true")) + RCURL
 class_name = Combine(identifier + ZeroOrMore( DOT + identifier ))
 class_implements = IMPLEMENTS + delimitedList( class_name ).setResultsName("class_implements",listAllMatches="true")
