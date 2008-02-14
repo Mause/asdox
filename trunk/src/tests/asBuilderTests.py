@@ -521,21 +521,18 @@ class ASFieldTestCase(BaseTestCase):
 		#test that 'PI' field is of type Number
 		self.assertEqual(pkg.getClass("MyClass").getField("PI").getType(),"Number","field was not of type 'Number'.")
 	def testFieldModifiers(self):
-		"Parse class modifier"
+		"Parse field modifiers"
 		self.builder.addSource(""" 
 		package
 		{
 		        class MyClass
 			{
-			  var iVar:String;
-			  public var name:String;
-			  private var age:int;
-			  protected var salary:Number;
-			  static var count:int;
-			  mx_internal var mx:String;
-			  
+				var iVar:String;
+				public var name:String;
+				private var age:int;
+				protected var salary:Number;
+				static var count:int; 
 			}
-			
 		}
 		""")
 		#test for valid package
@@ -556,9 +553,27 @@ class ASFieldTestCase(BaseTestCase):
 		self.assertEqual(cls.getField("salary").hasModifier("protected"),True,"Unable to parse 'protected' field modifier")
 		#test for 'static' field modifier
 		self.assertEqual(cls.getField("count").hasModifier("static"),True,"Unable to parse 'static' field modifier")
+	def testFieldNamespaceModifier(self):
+		"Parse class namespace modifier"
+		self.builder.addSource(""" 
+		package
+		{
+		        class MyClass
+			{ 
+				mx_internal var mx:String;
+			}
+		}
+		""")
+		#test for valid package
+		self.assertEqual(self.builder.hasPackage(""),True,"Unnamed package not found in testFieldModifiers")
+		#get unnamed package
+		pkg = self.builder.getPackage("")
+		#test that a class has been declared
+		self.assertEqual(pkg.hasClass("MyClass"),True,"Package does not have one or more classes defined")
+		# get class 'MyClass'
+		cls = pkg.getClass("MyClass")
 		#test for 'user_defined_namespace' field modifier
-		self.assertEqual(cls.getField("mx").hasModifier("mx_internal"),True,"Unable to parse user defined namespace 'mx_internal'")
-		
+		self.assertEqual(cls.getField("mx").hasModifier("mx_internal"),True,"Unable to parse user defined namespace 'mx_internal'")	
 	def testJavaDocWithClassFields(self):
 		pass
 	
