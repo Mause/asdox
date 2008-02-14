@@ -518,8 +518,97 @@ class ASFieldTestCase(BaseTestCase):
 	
 	def testMetaDataWithClassFields(self):
 		pass
-	
-
+class ASMethodTestCase(BaseTestCase):
+	"Test cases for class methods"
+	def testConstructorMethod(self):
+		"Parse class constructor method with no arguments."
+		self.builder.addSource("""
+		package com.gurufaction.asdox
+		{
+			public class MyClass
+			{
+				public function MyClass()
+				{
+				}
+			}
+		}
+		""")
 		
+		self.assertEqual(self.builder.hasPackage("com.gurufaction.asdox"),True,"Package 'com.gurufaction.asdox' not found.")
+		pkg = self.builder.getPackage("com.gurufaction.asdox")
+		self.assertEqual(pkg.getClass("MyClass").hasMethod("MyClass"),True,"'MyClass' method not found in 'MyClass'.")
+		meth = pkg.getClass("MyClass").getMethod("MyClass")
+		self.assertEqual(meth.getName(),"MyClass","'MyClass' method does not have same name.")
+		self.assertEqual(meth.getType(),"void","'MyClass' method does not return type 'void'.")
+		self.assertEqual(meth.hasModifier("public"),True,"'MyClass' method is not public.")
+		self.assertEqual(len(meth.getArguments()),0,"'MyClass' method does not contain zero arguments.")
+	def testMethod(self):
+		"Parse class method with no arguments."
+		self.builder.addSource("""
+		package com.gurufaction.asdox
+		{
+			public class MyClass
+			{
+				public function sayHi():String
+				{
+				}
+			}
+		}
+		""")
+		
+		self.assertEqual(self.builder.hasPackage("com.gurufaction.asdox"),True,"Package 'com.gurufaction.asdox' not found.")
+		pkg = self.builder.getPackage("com.gurufaction.asdox")
+		self.assertEqual(pkg.getClass("MyClass").hasMethod("sayHi"),True,"'sayHi' method not found in 'MyClass'.")
+		meth = pkg.getClass("MyClass").getMethod("sayHi")
+		self.assertEqual(meth.getName(),"sayHi","'sayHi' method does not have same name.")
+		self.assertEqual(meth.getType(),"String","'sayHi' method does not return type 'String'.")
+		self.assertEqual(meth.hasModifier("public"),True,"'sayHi' method is not public.")
+		self.assertEqual(len(meth.getArguments()),0,"'sayHi' method does not contain zero arguments.")
+	def testMethodOverriding(self):
+		"Parse overridden class method"
+		self.builder.addSource("""
+		package com.gurufaction.asdox
+		{
+			class Extender extends Base
+			{
+				public override function thanks():String 
+				{
+					return super.thanks() + " nui loa";
+				}
+			}
+		}
+		""")
+		
+		self.assertEqual(self.builder.hasPackage("com.gurufaction.asdox"),True,"Package 'com.gurufaction.asdox' not found.")
+		pkg = self.builder.getPackage("com.gurufaction.asdox")
+		self.assertEqual(pkg.getClass("Extender").hasMethod("thanks"),True,"'thanks' method not found in 'Extender'.")
+		meth = pkg.getClass("Extender").getMethod("thanks")
+		self.assertEqual(meth.hasModifier("override"),True)
+	def testMethodArguments(self):
+		"Parse class method with multiple arguments."
+		self.builder.addSource("""
+		package com.gurufaction.asdox
+		{
+			public class MyClass
+			{
+				public function addIntegers(num1:int,num2:int):int
+				{
+					return num1 + num2;
+				}
+			}
+		}
+		""")
+		
+		self.assertEqual(self.builder.hasPackage("com.gurufaction.asdox"),True,"Package 'com.gurufaction.asdox' not found.")
+		pkg = self.builder.getPackage("com.gurufaction.asdox")
+		self.assertEqual(pkg.getClass("MyClass").hasMethod("addIntegers"),True,"'addIntegers' method not found in 'MyClass'.")
+		meth = pkg.getClass("MyClass").getMethod("addIntegers")
+		self.assertEqual(len(meth.getArguments()),2,"'addIntegers' method does not contain two arguments.")
+		arg1 = meth.getArgument("num1")
+		arg2 = meth.getArgument("num2")
+		self.assertEqual(arg1.getName(),"num1")
+		self.assertEqual(arg1.getType(),"int")
+		self.assertEqual(arg2.getName(),"num2")
+		self.assertEqual(arg2.getType(),"int")
 if __name__ == "__main__":
 	unittest.main()
