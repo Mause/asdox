@@ -814,7 +814,9 @@ class ASMethodTestCase(BaseTestCase):
 		
 		self.assertEqual(self.builder.hasPackage("com.gurufaction.asdox"),True,"Package 'com.gurufaction.asdox' not found.")
 		pkg = self.builder.getPackage("com.gurufaction.asdox")
-		self.assertEqual(pkg.getClass("MyClass").hasMethod("labelPlacement"),True,"'labelPlacement' method not found in 'MyClass'.")
+		self.assertEqual(pkg.getClass("MyClass").hasGetter("labelPlacement"),True,"'labelPlacement' method not found in 'MyClass'.")
+		meth = pkg.getClass("MyClass").getGetter("labelPlacement")
+		self.assertEqual(meth.getAccessor(),"get")
 	def testMethodSetter(self):
 		"Parse class method with setter."
 		self.builder.addSource("""
@@ -822,9 +824,9 @@ class ASMethodTestCase(BaseTestCase):
 		{
 			public class MyClass
 			{
-				public function set labelPlacement():String
+				public function set labelPlacement(label:String):void
 				{
-					return _labelPlacement;
+					_labelPlacement = label;
 				}
 			}
 		}
@@ -832,7 +834,33 @@ class ASMethodTestCase(BaseTestCase):
 		
 		self.assertEqual(self.builder.hasPackage("com.gurufaction.asdox"),True,"Package 'com.gurufaction.asdox' not found.")
 		pkg = self.builder.getPackage("com.gurufaction.asdox")
-		self.assertEqual(pkg.getClass("MyClass").hasMethod("labelPlacement"),True,"'labelPlacement' method not found in 'MyClass'.")
+		self.assertEqual(pkg.getClass("MyClass").hasSetter("labelPlacement"),True,"'labelPlacement' method not found in 'MyClass'.")
+		meth = pkg.getClass("MyClass").getSetter("labelPlacement")
+		self.assertEqual(meth.getAccessor(),"set")
+	def testMethodGetterAndSetter(self):
+		"Parse class method with setter and getter."
+		self.builder.addSource("""
+		package com.gurufaction.asdox
+		{
+			public class MyClass
+			{
+				public function get name():String
+				{
+					return _name;
+				}
+				
+				public function set name(name:String):void
+				{
+					_name = name;
+				}
+			}
+		}
+		""")
+		
+		self.assertEqual(self.builder.hasPackage("com.gurufaction.asdox"),True,"Package 'com.gurufaction.asdox' not found.")
+		pkg = self.builder.getPackage("com.gurufaction.asdox")
+		self.assertEqual(pkg.getClass("MyClass").hasGetter("name"),True,"Getter 'name' method not found in 'MyClass'.")
+		self.assertEqual(pkg.getClass("MyClass").hasSetter("name"),True,"Setter 'name' method not found in 'MyClass'.")
 	def testMethodNamespace(self):
 		"Parse class method with namespace."
 		self.builder.addSource("""
