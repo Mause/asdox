@@ -177,10 +177,14 @@ class ASClass(Typeable,Modifiable,MetaTagable,Documentable,Includable,Namespacab
 	"Actionscript Class Definition"
 	__fields = dict()
 	__methods = dict()
+	__getters = dict()
+	__setters = dict()
 	__extends = "Object"
 	def __init__(self,name = ""):
 		self.__fields = dict()
 		self.__methods = dict()
+		self.__getters = dict()
+		self.__setters = dict()
 		self.__extends = "Object"
 		self._Typeable__name = name
 		self._Typeable__type = "class"
@@ -203,7 +207,12 @@ class ASClass(Typeable,Modifiable,MetaTagable,Documentable,Includable,Namespacab
 	def hasField(self,name):
 		return name in self.__fields
 	def addMethod(self,method):
-		self.__methods[method.getName()] = method
+		if method.getAccessor() == "set":
+			self.__setters[method.getName()] = method
+		elif method.getAccessor() == "get":
+			self.__getters[method.getName()] = method
+		else:
+			self.__methods[method.getName()] = method
 	def removeMethod(self,name):
 		del self.__methods[name]
 	def getMethod(self,name):
@@ -212,6 +221,18 @@ class ASClass(Typeable,Modifiable,MetaTagable,Documentable,Includable,Namespacab
 		return self.__methods
 	def hasMethod(self,name):
 		return name in self.__methods
+	def hasGetter(self,name):
+		return name in self.__getters
+	def hasSetter(self,name):
+		return name in self.__setters
+	def getGetter(self,name):
+		return self.__getters.get(name,None)
+	def getSetter(self,name):
+		return self.__setters.get(name,None)
+	def getGetters(self):
+		return self.__getters
+	def getSetters(self):
+		return self.__setters
 	def getExtends(self):
 		return self.__extends
 	def setExtends(self,name):
@@ -257,8 +278,10 @@ class ASArg(Typeable):
 class ASMethod(Typeable,Modifiable,MetaTagable,Documentable,NamespaceModifiable):
 	"Actionscript Method Definition"
 	__args = dict()
+	__accessor = ""
 	def __init__(self, name = "", type = "void"):
 		self.__args = dict()
+		self.__access = ""
 		self._Typeable__name = name
 		self._Typeable__type = type
 		self._MetaTagable__metaTags = dict()
@@ -274,3 +297,7 @@ class ASMethod(Typeable,Modifiable,MetaTagable,Documentable,NamespaceModifiable)
 		return self.__args.get(name,None)
 	def getArguments(self):
 		return self.__args
+	def setAccessor(self,name):
+		self.__accessor = name
+	def getAccessor(self):
+		return self.__accessor
