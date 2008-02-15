@@ -553,6 +553,29 @@ class ASFieldTestCase(BaseTestCase):
 		self.assertEqual(cls.getField("salary").hasModifier("protected"),True,"Unable to parse 'protected' field modifier")
 		#test for 'static' field modifier
 		self.assertEqual(cls.getField("count").hasModifier("static"),True,"Unable to parse 'static' field modifier")
+	def testFieldInitialization(self):
+		"Parse field initialization"
+		self.builder.addSource(""" 
+		package
+		{
+		        class MyClass
+			{
+				var name:String = "Michael Ramriez";
+				var age:int = 29;
+				var salary:Number = 41000.52;
+				var isSmart:Boolean = True;
+				var _labelPlacement:String = ButtonLabelPlacement.RIGHT; 
+			}
+		}
+		""")
+		#test for valid package
+		self.assertEqual(self.builder.hasPackage(""),True,"Unnamed package not found in testFieldModifiers")
+		#get unnamed package
+		pkg = self.builder.getPackage("")
+		#test that a class has been declared
+		self.assertEqual(pkg.hasClass("MyClass"),True,"Package does not have one or more classes defined")
+		# get class 'MyClass'
+		cls = pkg.getClass("MyClass")
 	def testFieldNamespaceModifier(self):
 		"Parse class namespace modifier"
 		self.builder.addSource(""" 
@@ -774,5 +797,69 @@ class ASMethodTestCase(BaseTestCase):
 		self.assertEqual(self.builder.hasPackage("com.gurufaction.asdox"),True,"Package 'com.gurufaction.asdox' not found.")
 		pkg = self.builder.getPackage("com.gurufaction.asdox")
 		self.assertEqual(pkg.getClass("MyClass").hasMethod("getName"),True,"'getName' method not found in 'MyClass'.")
+	def testMethodGetter(self):
+		"Parse class method with getter."
+		self.builder.addSource("""
+		package com.gurufaction.asdox
+		{
+			public class MyClass
+			{
+				public function get labelPlacement():String
+				{
+					return _labelPlacement;
+				}
+			}
+		}
+		""")
+		
+		self.assertEqual(self.builder.hasPackage("com.gurufaction.asdox"),True,"Package 'com.gurufaction.asdox' not found.")
+		pkg = self.builder.getPackage("com.gurufaction.asdox")
+		self.assertEqual(pkg.getClass("MyClass").hasMethod("labelPlacement"),True,"'labelPlacement' method not found in 'MyClass'.")
+	def testMethodSetter(self):
+		"Parse class method with setter."
+		self.builder.addSource("""
+		package com.gurufaction.asdox
+		{
+			public class MyClass
+			{
+				public function set labelPlacement():String
+				{
+					return _labelPlacement;
+				}
+			}
+		}
+		""")
+		
+		self.assertEqual(self.builder.hasPackage("com.gurufaction.asdox"),True,"Package 'com.gurufaction.asdox' not found.")
+		pkg = self.builder.getPackage("com.gurufaction.asdox")
+		self.assertEqual(pkg.getClass("MyClass").hasMethod("labelPlacement"),True,"'labelPlacement' method not found in 'MyClass'.")
+	def testMethodNamespace(self):
+		"Parse class method with namespace."
+		self.builder.addSource("""
+		package com.gurufaction.asdox
+		{
+			public class MyClass
+			{
+				mx_internal function setSelected(value:Boolean):void
+				{
+					if (_selected != value)
+					{
+						_selected = value;
+
+						invalidateDisplayList();
+    
+						if (toggle)
+							dispatchEvent(new Event(Event.CHANGE));
+
+						dispatchEvent(new FlexEvent(FlexEvent.VALUE_COMMIT));
+					}
+				}
+			}
+		}
+		""")
+		
+		self.assertEqual(self.builder.hasPackage("com.gurufaction.asdox"),True,"Package 'com.gurufaction.asdox' not found.")
+		pkg = self.builder.getPackage("com.gurufaction.asdox")
+		self.assertEqual(pkg.getClass("MyClass").hasMethod("setSelected"),True,"'setSelected' method not found in 'MyClass'.")
 if __name__ == "__main__":
 	unittest.main()
