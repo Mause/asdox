@@ -71,6 +71,7 @@ def getField( s,l,t ):
     return fld
 def getMethod( s,l,t ):
     fc = ASMethod(t.name,t.type[0])
+    fc.setAccessor(t.accessor)
     if len(t.modifiers) > 0:
 	for mod in t.modifiers[0]:
 	    fc.addModifier(mod)
@@ -83,10 +84,8 @@ def getMethod( s,l,t ):
 def getArgument(s,l,t):
     arg = ASArg(t.name,t.type[0])
     return arg
-
 def getMetaData(s,l,t):
     meta = ASMetaTag(t.name)
-    
     for att in t.attributes:
 	if att.key == "":
 	    meta.addParam(att.value)
@@ -150,7 +149,7 @@ variable = identifier("name") + Optional(type("type"),"*") + Optional( variable_
 variable_definition = variable_kind("kind") + identifier("name") + Optional(type("type"),"*") + Optional( variable_init ) + TERMINATOR
 argument_definition = variable + Optional( variable_init )
 
-function_name = Optional( GET ^ SET ) + identifier("name")
+function_name = Optional( GET ^ SET )("accessor") + identifier("name")
 function_block = Suppress( nestedExpr("{","}") )
 function_arguments = delimitedList(argument_definition.setParseAction(getArgument))
 function_signature = FUNCTION + function_name + LPARN + Optional( function_arguments("args") ) + RPARN + Optional( type, "void" )("type")
