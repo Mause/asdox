@@ -70,7 +70,7 @@ def getField( s,l,t ):
     fld.addModifier(t.kind)
     return fld
 def getMethod( s,l,t ):
-    fc = ASMethod(t.name[0],t.type[0])
+    fc = ASMethod(t.name,t.type[0])
     if len(t.modifiers) > 0:
 	for mod in t.modifiers[0]:
 	    fc.addModifier(mod)
@@ -108,6 +108,7 @@ INTERNAL = Keyword("internal")
 PUBLIC = Keyword("public")
 PRIVATE = Keyword("private")
 PROTECTED = Keyword("protected")
+MXINTERNAL = Keyword("mx_internal")
 STATIC = Keyword("static")
 PROTOTYPE = Keyword("prototype")
 FINAL = Keyword("final")
@@ -144,15 +145,15 @@ metadata_attributes = LPARN + delimitedList( Group(Optional(identifier("key") + 
 metadata = ( ZeroOrMore(comment) + LSQUARE + identifier("name") + Optional( metadata_attributes ) + RSQUARE).setParseAction(getMetaData)
 
 variable_kind = VAR ^ CONST
-variable_init = EQUAL + Optional( QuotedString(quoteChar="\"", escChar='\\') ^ integer  ^ identifier)
+variable_init = EQUAL + Optional( QuotedString(quoteChar="\"", escChar='\\') ^ integer  ^ floatnumber ^ fully_qualified_identifier)
 variable = identifier("name") + Optional(type("type"),"*") + Optional( variable_init ) 
 variable_definition = variable_kind("kind") + identifier("name") + Optional(type("type"),"*") + Optional( variable_init ) + TERMINATOR
 argument_definition = variable + Optional( variable_init )
 
-function_name = Optional( GET ^ SET ) + identifier
+function_name = Optional( GET ^ SET ) + identifier("name")
 function_block = Suppress( nestedExpr("{","}") )
 function_arguments = delimitedList(argument_definition.setParseAction(getArgument))
-function_signature = FUNCTION + function_name("name") + LPARN + Optional( function_arguments("args") ) + RPARN + Optional( type, "void" )("type")
+function_signature = FUNCTION + function_name + LPARN + Optional( function_arguments("args") ) + RPARN + Optional( type, "void" )("type")
 _function = function_signature + function_block
 
 include_definition = INCLUDE + QuotedString(quoteChar="\"", escChar='\\') + TERMINATOR
@@ -165,12 +166,12 @@ metadata_definitions = ZeroOrMore(metadata).setResultsName("metadata",listAllMat
 use_namespace = USE + NAMESPACE + fully_qualified_identifier + TERMINATOR
 # Modifier Definitions
 base_attributes = INTERNAL ^ PUBLIC
-extended_attributes = base_attributes ^ PRIVATE ^ PROTECTED
+extended_attributes = base_attributes ^ PRIVATE ^ PROTECTED ^ MXINTERNAL
 class_attributes = Optional(base_attributes, "internal") + ( Optional(FINAL) & Optional(DYNAMIC) )
 class_block_attributes = Optional(extended_attributes,"internal") &  Optional(STATIC) & Optional(PROTOTYPE) 
 class_method_attributes = class_block_attributes &  Optional(FINAL) & Optional(OVERRIDE) & Optional(NATIVE) 
 
-class_variables = ( metadata_definitions + class_block_attributes("modifiers") + variable_definition).setParseAction(getField)
+class_variables = ( metadata_definitions + comments+ class_block_attributes("modifiers") + variable_definition).setParseAction(getField)
 class_method = ( metadata_definitions + comments + class_method_attributes.setResultsName("modifiers",listAllMatches="true") + _function).setParseAction(getMethod)
 method_definitions = Group(class_method).setResultsName("methods",listAllMatches="true")
 field_definitions = Group(class_variables).setResultsName("fields",listAllMatches="true")
