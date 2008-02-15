@@ -243,7 +243,7 @@ class ASField(Typeable,Modifiable,MetaTagable,Documentable,NamespaceModifiable):
 		self._Typeable__type = type
 		self._Modifiable__modifiers.add("internal")
 		self._MetaTagable__metaTags = dict()
-		self._Modifiable__ACCESS_MODIFIERS = set(['public','internal','private','protected'])
+		self._Modifiable__ACCESS_MODIFIERS = set(['public','internal','private','protected','mx_internal'])
 		self._Modifiable__TYPE_MODIFIERS =  set(['static','const'])
 		self._NamespaceModifiable__namespace = None
 	def isStatic(self):
@@ -264,7 +264,7 @@ class ASMethod(Typeable,Modifiable,MetaTagable,Documentable,NamespaceModifiable)
 		self._MetaTagable__metaTags = dict()
 		self._NamespaceModifiable__namespace = None
 		self._Modifiable__modifiers = set()
-		self._Modifiable__ACCESS_MODIFIERS = set(['public','internal','private','protected'])
+		self._Modifiable__ACCESS_MODIFIERS = set(['public','internal','private','protected','mx_internal'])
 		self._Modifiable__TYPE_MODIFIERS =  set(['final','override','static'])
 	def addArgument(self,arg):
 		self.__args[arg.getName()] = arg
