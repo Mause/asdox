@@ -1,4 +1,4 @@
-#summary Using asDox with the Cheetah template engine
+#summary Example using asDox with the Cheetah template engine to generate C# object
 #labels Featured
 
 = Introduction =
