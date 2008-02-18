@@ -44,7 +44,6 @@ Once all of your source files have been added to the Builder class you can begin
       * Metadata
       * Fields/Methods
 
-===Exploring Packages===
 
 The Builder class has several methods to help you access package information. You can test for the existance of a package by calling the `hasPackage()` method. This method returns True if the package exist and False otherwise.
 
@@ -65,6 +64,8 @@ allPkgs = builder.getPackages()
 for pkg in allPkgs.keys():
 	print pkg
 }}}
+
+===Exploring Packages===
 
 The Package object contains methods for accessing import and class information. If you want to test for the existence of an import statement you can use the `hasImport()` method of the Package class. This method returns True if the specified import statement exist within the package.
 
