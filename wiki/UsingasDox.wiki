@@ -65,3 +65,16 @@ allPkgs = builder.getPackages()
 for pkg in allPkgs.keys():
 	print pkg
 }}}
+
+The Package object contains methods for accessing import and class information. If you want to test for the existence of an import statement you can use the `hasImport()` method of the Package class. This method returns True if the specified import statement exist within the package.
+
+{{{
+pkg.hasImport("mx.controls")
+}}}
+
+You can also retrieve a list of all imports using the `getImports()` method of the Package class. This method returns a `set()` containing all the import statements.
+
+{{{
+for stmt in pkg.getImports():
+	print stmt
+}}}
