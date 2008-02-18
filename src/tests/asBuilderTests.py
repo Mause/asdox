@@ -491,6 +491,23 @@ class BuilderTestCase(BaseTestCase):
 		self.assertEqual(len(pkg.getClasses()),2,"Package doesn't contain 2 classes.")
 		self.assertEqual(pkg.hasClass("MyClass"),True,"'MyClass' not found in package.")
 		self.assertEqual(pkg.hasClass("MyOtherClass"),True,"'MyOtherClass' not found in package.")
+	def testAddSourceDir(self):
+		"Parse directory for source files"
+		self.builder.addSource("resources/com/gurufaction")
+		#test if package exist
+		self.assertEqual(self.builder.hasPackage("com.gurufaction"),True,"Package not found in source directory")
+		#get current package
+		pkg = self.builder.getPackage("com.gurufaction")
+		#test if two classes exist in package
+		self.assertEqual(len(pkg.getClasses()),2,"Did not find expected number of classes in source directory")
+		#get first class
+		cls1 = pkg.getClass("MyClassFile1")
+		#get second class
+		cls2 = pkg.getClass("MyClassFile2")
+		#get first class
+		self.assertEqual(cls1.getName(),"MyClassFile1","First class not found 'MyClassFile1'")
+		#get second class
+		self.assertEqual(cls2.getName(),"MyClassFile2","Second class not found 'MyClassFile2'")
 class ASFieldTestCase(BaseTestCase):
 	def testClassField(self):
 		"Parse class field."
@@ -912,6 +929,6 @@ class ASMethodTestCase(BaseTestCase):
 		
 		self.assertEqual(self.builder.hasPackage("com.gurufaction.asdox"),True,"Package 'com.gurufaction.asdox' not found.")
 		pkg = self.builder.getPackage("com.gurufaction.asdox")
-		self.assertEqual(pkg.getClass("MyClass").hasMethod("setSelected"),True,"'setSelected' method not found in 'MyClass'.")
+		self.assertEqual(pkg.getClass("MyClass").hasMethod("setSelected"),True,"'setSelected' method not found in 'MyClass'.")		
 if __name__ == "__main__":
 	unittest.main()
