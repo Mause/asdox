@@ -79,3 +79,23 @@ You can also retrieve a list of all imports using the `getImports()` method of t
 for stmt in pkg.getImports():
 	print stmt
 }}}
+
+Accessing class information is similar to accessing import information. You can test for the existence of a class using the `hasClass()` method.
+
+{{{
+pkg.hasClass("MyClass")
+}}}
+
+To get a specific class from a package you use the `getClass()` method passing in the class name as an argument.
+
+{{{
+cls = pkg.getClass("MyClass")
+}}}
+
+As with imports you can get retrieve all classes in a package using the `getClasses()` method.
+
+{{{
+allClasses = pkg.getClasses()
+for cls in allClasses.keys():
+       print cls
+}}}
