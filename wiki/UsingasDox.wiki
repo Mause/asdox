@@ -52,13 +52,13 @@ The Builder class has several methods to help you access package information. Yo
 builder.hasPackage("com.googlecode.asdox")
 }}}
 
-Once you have determined that the package exists you can use the `getPackage()' method of the Builder class to get that package from the model.
+Once you have determined that the package exists you can use the `getPackage()` method of the Builder class to get that package from the model.
 
 {{{
 pkg = builder.getPackage("com.goolecode.asdox")
 }}}
 
-If you don't know the name of the package or if your model contains several packages you can use the 'getPackages()' method of the Builder class to get all packages contained in the model. This method returns a dictionary of packages with the key being the package name.
+If you don't know the name of the package or if your model contains several packages you can use the `getPackages()` method of the Builder class to get all packages contained in the model. This method returns a dictionary of packages with the key being the package name.
 
 {{{
 allPkgs = builder.getPackages()
