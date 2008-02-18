@@ -1,0 +1,35 @@
+#summary Using asDox
+#labels Featured
+
+===Using asDox===
+
+==Entry Point==
+
+The Builder class is the main entry point for asDox. The Builder class parses source files and generates a model from those source files. The following code demonstrates how to create an instance of the Builder class:
+
+{{{
+from asdox import asBuilder
+
+builder = asBuilder.Builder()
+}}} 
+
+==Adding Source Files==
+
+After creating an instance of the Builder class you need to add Actionscript source files in order to generate a working model. The Builder class has an `addSource()` method for doing this. This method can take a string parameter representing Actionscript code, a filename, a directory, or a file object. When specifying a directory parameter to `addSource` will automatically locate all files with a .as extension in the main directory and any subdirectories. 
+
+{{{
+builder.addSource("""
+package com.googlecode.asdox
+{
+	public class MyClass
+	{
+	}
+}
+""")
+
+builder.addSource("com\googlecode\asdox\MyClass.as")
+builder.addSource("com\googlecode\asdox\")
+
+f = Open("com\googlecode\asdox\MyClass.as")
+builder.addSouce(f)
+}}} 
