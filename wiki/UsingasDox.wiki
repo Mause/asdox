@@ -31,5 +31,5 @@ builder.addSource("com\\googlecode\\asdox\\MyClass.as")
 builder.addSource("com\\googlecode\\asdox\\")
 
 f = Open("com\\googlecode\\asdox\\MyClass.as")
-builder.addSouce(f)
+builder.addSource(f)
 }}} 
