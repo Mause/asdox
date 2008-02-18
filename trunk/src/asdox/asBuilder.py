@@ -63,12 +63,12 @@ class Builder:
 				# Test if package currently exists in dictionary
 				if obj.getName() in self.__packages:
 					curPkg = self.__packages[obj.getName()]
-					for cls in obj.getClasses():
-						if cls.getName() in curPkg.getClasses():
+					for cls in obj.getClasses().items():
+						if curPkg.hasClass(cls[1].getName()):
 							# Do nothing if class already exists
 							pass
 						else:
-							curPkg.addClass(cls)
+							curPkg.addClass(cls[1])
 				else:
 					# Add package object to dictionary using the 
 					# package name as the key.
