@@ -465,8 +465,32 @@ class ParsingExternalFileTestCase(BaseTestCase):
 		"Load and Parse Button.as source file."
 		self.builder.addSource("resources/Button.as")
 		self.assertEqual( self.builder.hasPackage("mx.controls"),True,"'mx.controls' package not found!")
-		
-		
+class BuilderTestCase(BaseTestCase):		
+	def testMultipleSources(self):
+		"Parse multiple source files."
+		self.builder.addSource(""" 
+		package com.googlecode.asdox
+		{
+			class MyClass
+			{
+				
+			}
+		}
+		""")
+		self.builder.addSource(""" 
+		package com.googlecode.asdox
+		{
+			class MyOtherClass
+			{
+				
+			}
+		}
+		""")
+		self.assertEqual(self.builder.hasPackage("com.googlecode.asdox"),True,"Package 'com.googlecode.asdox' not found.")
+		pkg = self.builder.getPackage("com.googlecode.asdox")
+		self.assertEqual(len(pkg.getClasses()),2,"Package doesn't contain 2 classes.")
+		self.assertEqual(pkg.hasClass("MyClass"),True,"'MyClass' not found in package.")
+		self.assertEqual(pkg.hasClass("MyOtherClass"),True,"'MyOtherClass' not found in package.")
 class ASFieldTestCase(BaseTestCase):
 	def testClassField(self):
 		"Parse class field."
