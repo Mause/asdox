@@ -1,5 +1,5 @@
+#summary Using asDox with the Cheetah template engine
 #labels Featured
-#Using asDox with the Cheetah template engine
 
 = Introduction =
 
