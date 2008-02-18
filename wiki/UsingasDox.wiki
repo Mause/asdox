@@ -62,6 +62,6 @@ If you don't know the name of the package or if your model contains several pack
 
 {{{
 allPkgs = builder.getPackages()
-for cls in allPkgs.values():
-	print cls.getName()
+for pkg in allPkgs.keys():
+	print pkg
 }}}
