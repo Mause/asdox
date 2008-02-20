@@ -92,7 +92,8 @@ def getMetaData(s,l,t):
 	else:
 	    meta.addParam(att.value,att.key)
     return meta
-    
+def parseJavaDoc(s,l,t):
+    pass
 COLON,LPARN,RPARN,LCURL,RCURL,EQUAL,SEMI,LSQUARE,RSQUARE = map(Suppress,":(){}=;[]")
 
 PACKAGE = Keyword("package")
@@ -131,8 +132,8 @@ number = Word(nums)
 integer = Combine( Optional(plusorminus) + number )
 floatnumber = Combine( integer + Optional( point + Optional(number) ) + Optional( e + integer ) )
 
-singleline_comment = "//" + restOfLine
-comment = (singleline_comment ^ cStyleComment).suppress()
+javaDocComment = Regex(r"/\*\*(?:[^*]*\*+)+?/").setParseAction(parseJavaDoc)
+comment = (dblSlashComment ^ cStyleComment).suppress()
 comments = ZeroOrMore( comment )
 
 identifier = Word(alphas + '_',alphanums + '_') 
@@ -141,7 +142,7 @@ type = COLON + (identifier ^ STAR )
 
 attribute = identifier ^ QuotedString(quoteChar="\"", escChar='\\') ^ integer
 metadata_attributes = LPARN + delimitedList( Group(Optional(identifier("key") + EQUAL) + attribute("value")).setResultsName("attributes",listAllMatches="true") ) + RPARN
-metadata = ( ZeroOrMore(comment) + LSQUARE + identifier("name") + Optional( metadata_attributes ) + RSQUARE).setParseAction(getMetaData)
+metadata = ( Optional(javaDocComment) + LSQUARE + identifier("name") + Optional( metadata_attributes ) + RSQUARE).setParseAction(getMetaData)
 
 variable_kind = VAR ^ CONST
 variable_init = EQUAL + Optional( QuotedString(quoteChar="\"", escChar='\\') ^ integer  ^ floatnumber ^ fully_qualified_identifier)
@@ -170,15 +171,15 @@ class_attributes = Optional(base_attributes, "internal") + ( Optional(FINAL) & O
 class_block_attributes = Optional(extended_attributes,"internal") &  Optional(STATIC) & Optional(PROTOTYPE) 
 class_method_attributes = class_block_attributes &  Optional(FINAL) & Optional(OVERRIDE) & Optional(NATIVE) 
 
-class_variables = ( metadata_definitions + comments+ class_block_attributes("modifiers") + variable_definition).setParseAction(getField)
-class_method = ( metadata_definitions + comments + class_method_attributes.setResultsName("modifiers",listAllMatches="true") + _function).setParseAction(getMethod)
+class_variables = ( metadata_definitions + Optional(javaDocComment) + class_block_attributes("modifiers") + variable_definition).setParseAction(getField)
+class_method = ( metadata_definitions + Optional(javaDocComment) + class_method_attributes.setResultsName("modifiers",listAllMatches="true") + _function).setParseAction(getMethod)
 method_definitions = Group(class_method).setResultsName("methods",listAllMatches="true")
 field_definitions = Group(class_variables).setResultsName("fields",listAllMatches="true")
 class_block = LCURL + ZeroOrMore( comment ^ include_definitions ^ field_definitions ^ method_definitions ) + RCURL
 class_implements = IMPLEMENTS + delimitedList( fully_qualified_identifier ).setResultsName("class_implements",listAllMatches="true")
 class_extends = EXTENDS + fully_qualified_identifier("extends")
 class_inheritance = Optional( class_extends ) + Optional( class_implements )
-class_definition = ( metadata_definitions + class_attributes("modifiers") + CLASS("type") + fully_qualified_identifier("name") + class_inheritance + class_block).setParseAction(parseClass)
+class_definition = ( metadata_definitions + Optional(javaDocComment) + class_attributes("modifiers") + CLASS("type") + fully_qualified_identifier("name") + class_inheritance + class_block).setParseAction(parseClass)
 interface_definition = Optional( base_attributes ) + INTERFACE("type") + fully_qualified_identifier + Optional( class_extends ) + LCURL + ZeroOrMore( function_signature ) + RCURL
 
 
