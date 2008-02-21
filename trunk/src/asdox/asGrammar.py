@@ -52,8 +52,8 @@ def parseClass( s,l,t ):
 	for m in t.methods:
 	    cls.addMethod(m[0])
     if len(t.metadata) > 0:
-	for m in t.metadata[0]:
-	    cls.addMetaTag(m)
+	for m in t.metadata:
+	    cls.addMetaTag(m[0])
     for mod in t.modifiers:
 	cls.addModifier(mod)
     if len(t.class_implements) > 0:
@@ -160,7 +160,7 @@ include_definition = INCLUDE + QuotedString(quoteChar="\"", escChar='\\') + TERM
 import_definition = IMPORT + fully_qualified_identifier + Optional(DOT + STAR) + TERMINATOR
 import_definitions = Group(import_definition).setResultsName("imports",listAllMatches="true")
 include_definitions = Group(include_definition).setResultsName("includes",listAllMatches="true")
-metadata_definitions = ZeroOrMore(metadata).setResultsName("metadata",listAllMatches="true")
+metadata_definitions = Group(metadata).setResultsName("metadata",listAllMatches="true")
 
 
 use_namespace = USE + NAMESPACE + fully_qualified_identifier + TERMINATOR
@@ -171,15 +171,15 @@ class_attributes = Optional(base_attributes, "internal") + ( Optional(FINAL) & O
 class_block_attributes = Optional(extended_attributes,"internal") &  Optional(STATIC) & Optional(PROTOTYPE) 
 class_method_attributes = class_block_attributes &  Optional(FINAL) & Optional(OVERRIDE) & Optional(NATIVE) 
 
-class_variables = ( metadata_definitions + Optional(javaDocComment) + class_block_attributes("modifiers") + variable_definition).setParseAction(getField)
-class_method = ( metadata_definitions + Optional(javaDocComment) + class_method_attributes.setResultsName("modifiers",listAllMatches="true") + _function).setParseAction(getMethod)
+class_variables = ( ZeroOrMore(metadata_definitions) + Optional(javaDocComment) + class_block_attributes("modifiers") + variable_definition).setParseAction(getField)
+class_method = ( ZeroOrMore(metadata_definitions) + Optional(javaDocComment) + class_method_attributes.setResultsName("modifiers",listAllMatches="true") + _function).setParseAction(getMethod)
 method_definitions = Group(class_method).setResultsName("methods",listAllMatches="true")
 field_definitions = Group(class_variables).setResultsName("fields",listAllMatches="true")
 class_block = LCURL + ZeroOrMore( comment ^ include_definitions ^ field_definitions ^ method_definitions ) + RCURL
 class_implements = IMPLEMENTS + delimitedList( fully_qualified_identifier ).setResultsName("class_implements",listAllMatches="true")
 class_extends = EXTENDS + fully_qualified_identifier("extends")
 class_inheritance = Optional( class_extends ) + Optional( class_implements )
-class_definition = ( metadata_definitions + Optional(javaDocComment) + class_attributes("modifiers") + CLASS("type") + fully_qualified_identifier("name") + class_inheritance + class_block).setParseAction(parseClass)
+class_definition = ( ZeroOrMore(metadata_definitions ^ include_definitions ^ use_namespace ^ comment) + Optional(javaDocComment) + class_attributes("modifiers") + CLASS("type") + fully_qualified_identifier("name") + class_inheritance + class_block).setParseAction(parseClass)
 interface_definition = Optional( base_attributes ) + INTERFACE("type") + fully_qualified_identifier + Optional( class_extends ) + LCURL + ZeroOrMore( function_signature ) + RCURL
 
 
