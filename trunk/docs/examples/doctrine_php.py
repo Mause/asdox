@@ -13,6 +13,7 @@ package com.gurufaction.myApp
                 private var _dob:DateTime;
                 private var _addresses:ArrayCollection;
                 
+                [Column]
                 public function get Name():String
                 {
                 	return _name;
@@ -22,7 +23,7 @@ package com.gurufaction.myApp
                 {
                 	_name = value;
                 }
-                [Column(length=1)]
+                [Column(name='gender',type='string',length=1)]
                 public function get Gender():String
                 {
                 	return _gender;
@@ -33,6 +34,7 @@ package com.gurufaction.myApp
                 	_gender = value;
                 }
                 
+                [Column(notblank=true)]
                 public function get DOB():DateTime
                 {
                 	return _dob;
@@ -48,8 +50,7 @@ package com.gurufaction.myApp
                 {
                 	return _age;
                 }
-                [HasOne(name="Mother")]
-                [Ignore]
+                [HasOne(name='Forum_Thread as Threads',local='id',foreign='board_id')]
                 public function get Mother():Mother
                 {
                 	return _mom;
@@ -63,62 +64,66 @@ pkg = builder.getPackage("com.gurufaction.myApp")
 
 template = """
 <?php
+#def createMeth($meth_name,$params)
+	#set $name = ""
+        #set $type = ""
+        #set $length = 'null'
+        #set $array = dict()
+	#for $key,$value in $params.items()
+        	#if $key == "name"
+                	#set $name = $value
+                #else if $key == "type"
+                	#set $type = $value
+                #else if $key == "length"
+                	#set $length = $value
+                #else
+                	#set $array[$key] = $value
+                #end if 
+        #end for
+#raw$this->#end raw${meth_name}($name#slurp
+                #if $meth_name == "hasColumn"
+,$type,$length#slurp
+                #end if
+		#if len($array) > 0
+,array(#slurp
+                        #set $counter = 1
+                	#for $key, $value in $array.items()
+                        	#set $counter = $counter + 1
+'$key' => $value#slurp
+                        	#if $counter == len($array)
+,#slurp
+                        	#end if
+                        #end for
+                #end if
+);
+#end def
 
 class $cls.getName() extends Doctrine_Record
 {
 	public function setUp()
         {
-       	#for $name in $cls.getGetters().values()
-		#if $name.hasMetaTag("HasOne")
-                	#set $tag = $name.getMetaTag("HasOne")
-                        #if $tag.hasParam("name")
-                #raw$this->#end rawhasOne('$tag.getParam("name")')
-                
-                        #end if
+       	#for $getter in $cls.getGetters().values()
+		#if $getter.hasMetaTag("HasOne") 
+                $createMeth("hasOne",$getter.getMetaTag("HasOne").getParams())
+                #end if
+                #if $getter.hasMetaTag("HasMany") 
+                $createMeth("hasMany",$getter.getMetaTag("HasMany").getParams())
                 #end if
 	#end for
         }
         
 	public function setTableDefinition()
         {
-            #for $name in $cls.getGetters().values()
-                #set $column_name = $name.getName().lower()
-                #set $column_type = $name.getType().lower()
-                #set $column_length = 'null'
-                #set $array = dict()
-                #if $name.hasMetaTag("Ignore") == False
-                #if $name.hasMetaTag("Column")
-                	#set $tag = $name.getMetaTag("Column")
-                        #for $key,$value in $tag.getParams().items()
-                        	#if $key == "name"
-                                    #set $column_name = $value
-                                #else if $key == "type"
-                                    #set $column_type = $value
-                                #else if $key == "length"
-                                    #set $column_length = $value
-                                #else
-                                	#set $array[$key] = $value
-                                #end if
-                        #end for
-                #end if
-                #raw$this->#end rawhasColumn('$column_name','$column_type'#slurp
-                #if len($array) > 0
-,$column_length,
-			array(
-                        #set $counter = 1
-                	#for $key, $value in $array.items()
-                        	#set $counter = $counter + 1
-                        '$key' => $value#slurp
-                        	#if $counter == len($array)
-,
-                        	#end if
-                        #end for
-                #else
-                	#if $column_length != "null"
-,$column_length#slurp
+            #for $getter in $cls.getGetters().values()
+                #if $getter.hasMetaTag("Column")
+                	#set $tag = $getter.getMetaTag("Column")
+                        #if $tag.hasParam("name") == False
+$tag.addParam("'" + $getter.getName().lower() + "'","name")#slurp
                         #end if
-                #end if
-);                
+                        #if $tag.hasParam("type") == False
+$tag.addParam("'" + $getter.getType().lower() + "'","type")#slurp
+                        #end if
+                $createMeth("hasColumn",$tag.getParams())#slurp
                 #end if
             #end for
         }
