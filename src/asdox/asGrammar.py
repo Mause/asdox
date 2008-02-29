@@ -140,7 +140,7 @@ identifier = Word(alphas + '_',alphanums + '_')
 fully_qualified_identifier = Combine(identifier + ZeroOrMore( DOT + identifier ))
 type = COLON + (identifier ^ STAR )
 
-attribute = identifier ^ QuotedString(quoteChar="\"", escChar='\\') ^ integer
+attribute = floatnumber ^ fully_qualified_identifier ^ QuotedString(quoteChar="\"", escChar='\\',unquoteResults=False) ^ QuotedString(quoteChar="'", escChar='\\',unquoteResults=False) ^ integer
 metadata_attributes = LPARN + delimitedList( Group(Optional(identifier("key") + EQUAL) + attribute("value")).setResultsName("attributes",listAllMatches="true") ) + RPARN
 metadata = ( Optional(javaDocComment) + LSQUARE + identifier("name") + Optional( metadata_attributes ) + RSQUARE).setParseAction(getMetaData)
 
