@@ -90,9 +90,9 @@ class ASClassTestCase(BaseTestCase):
 		self.assertEqual(meta.getType(),"metatag","MetaTag type not equal to 'metatag'.")
 		self.assertEqual(len(meta.getParams()),2,"'Event' MetaTag should contain 2 parameters.")
 		self.assertEqual(meta.hasParam("name"),True,"'Event' MetaTag should have 'name' parameter.")
-		self.assertEqual(meta.getParam("name"),"buttonDown","'name' parameter should equal 'buttonDown'.")
+		self.assertEqual(meta.getParam("name"),"\"buttonDown\"","'name' parameter should equal 'buttonDown'.")
 		self.assertEqual(meta.hasParam("type"),True,"'Event' MetaTag should have 'type' parameter.")
-		self.assertEqual(meta.getParam("type"),"mx.events.FlexEvent","'type' parameter should equal 'mx.events.FlexEvent'.")
+		self.assertEqual(meta.getParam("type"),"\"mx.events.FlexEvent\"","'type' parameter should equal 'mx.events.FlexEvent'.")
 	def testClassMetaData(self):
 		self.builder.addSource("""
 		package test{
@@ -125,16 +125,16 @@ class ASClassTestCase(BaseTestCase):
 		self.assertEqual(meta.getType(),"metatag","MetaTag type not equal to 'metatag'.")
 		self.assertEqual(len(meta.getParams()),2,"'Event' MetaTag should contain 2 parameters.")
 		self.assertEqual(meta.hasParam("name"),True,"'Event' MetaTag should have 'name' parameter.")
-		self.assertEqual(meta.getParam("name"),"myEnableEvent","'name' parameter should equal 'myEnableEvent'.")
+		self.assertEqual(meta.getParam("name"),"\"myEnableEvent\"","'name' parameter should equal 'myEnableEvent'.")
 		self.assertEqual(meta.hasParam("type"),True,"'Event' MetaTag should have 'type' parameter.")
-		self.assertEqual(meta.getParam("type"),"flash.events.Event","'type' parameter should equal 'flash.events.Event'.")
+		self.assertEqual(meta.getParam("type"),"\"flash.events.Event\"","'type' parameter should equal 'flash.events.Event'.")
 		# Test MetaTag 'DefaultTriggerEvent'
 		self.assertEqual(cls.hasMetaTag("DefaultTriggerEvent"),True,"MetaTag 'Event' not found.")
 		meta = cls.getMetaTag("DefaultTriggerEvent")
 		self.assertEqual(meta.getName(),"DefaultTriggerEvent","MetaTag name not equal to 'DefaultTriggerEvent'.")
 		self.assertEqual(meta.getType(),"metatag","MetaTag type not equal to 'metatag'.")
 		self.assertEqual(len(meta.getParams()),1,"'DefaultTriggerEvent' MetaTag should contain one parameters.")
-		self.assertEqual(meta.getParam(0),"click","Parameter should equal 'click'.")
+		self.assertEqual(meta.getParam(0),"\"click\"","Parameter should equal 'click'.")
 	def testClassInclude(self):
 		"Parse Class with Include statement"
 		self.builder.addSource("""
