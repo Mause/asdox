@@ -128,6 +128,24 @@ $tag.addParam("'" + $getter.getType().lower() + "'","type")#slurp
             #end for
         }
 }
+
+class ${cls.getName()}DAO
+{
+	public function save($cls.getName() &$$cls.getName().lower() )
+        {
+        	$$cls.getName().lower()->save();
+        }
+        
+        public function delete($cls.getName() &$$cls.getName().lower() )
+        {
+        	$$cls.getName().lower()->delete();
+        }
+        
+        public function get(#raw$id#end raw)
+        {
+        	return #raw$conn#end raw->getTable('${cls.getName()}')->find(#raw$id#end raw);
+        }
+}
 ?>
 """
 nameSpace = {'cls': pkg.getClass("Person")}
