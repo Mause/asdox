@@ -128,7 +128,10 @@ $tag.addParam("'" + $getter.getType().lower() + "'","type")#slurp
             #end for
         }
 }
-
+?>
+"""
+templateDAO = """
+<?php
 class ${cls.getName()}DAO
 {
 	public function save($cls.getName() &$$cls.getName().lower() )
@@ -148,6 +151,12 @@ class ${cls.getName()}DAO
 }
 ?>
 """
-nameSpace = {'cls': pkg.getClass("Person")}
-t = Template(template, searchList=[nameSpace])
-print t
+for cls in pkg.getClasses().values():
+    t = Template(template, searchList=[{'cls': cls}])
+    file = open( cls.getName() + '.php','w')
+    file.write(str(t))
+    file.close()
+    t = Template(templateDAO, searchList=[{'cls': cls}])
+    file = open( cls.getName() + 'DAO.php','w')
+    file.write(str(t))
+    file.close()
