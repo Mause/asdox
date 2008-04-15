@@ -37,7 +37,6 @@ def parsePackage( s,l,t ):
     for inc in t.includes:
 	pkg.addInclude(inc)
     return pkg
-
 def parseClass( s,l,t ):
     cls = ASClass(t.name)
     if t.type == "interface":
@@ -123,7 +122,7 @@ GET = Keyword("get")
 SET = Keyword("set")
 DOT = "."
 STAR = "*"
-TERMINATOR = SEMI ^ LineEnd()
+TERMINATOR = SEMI ^ White("\r\n")
 
 point = Literal('.')
 e = CaselessLiteral('E')
@@ -188,3 +187,36 @@ package_block = LCURL + ZeroOrMore(comment ^ import_definitions ^ include_defini
 package_definition = ( comments + PACKAGE("type") + Optional( fully_qualified_identifier("name") ) + package_block).setParseAction(parsePackage)
 
 source = ZeroOrMore( package_definition )
+
+########################## NEW GRAMMAR DEFINITION ##############################
+IDENTIFIER = Word(alphas + '_',alphanums + '_') 
+QUALIFIED_IDENTIFIER = Combine(IDENTIFIER + ZeroOrMore( DOT + IDENTIFIER ))
+SINGLE_LINE_COMMENT = dblSlashComment
+MULTI_LINE_COMMENT = cStyleComment
+JAVADOC_COMMENT = Regex(r"/\*\*(?:[^*]*\*+)+?/")
+COMMENTS = SINGLE_LINE_COMMENT ^ JAVADOC_COMMENT ^ MULTI_LINE_COMMENT
+DBL_QUOTED_STRING = QuotedString(quoteChar="\"", escChar='\\',unquoteResults=False)
+SINGLE_QUOTED_STRING = QuotedString(quoteChar="'", escChar='\\',unquoteResults=False)
+ARRAY_INIT = LSQUARE + RSQUARE
+VALUE = floatnumber ^ QUALIFIED_IDENTIFIER ^ DBL_QUOTED_STRING ^ SINGLE_QUOTED_STRING ^ integer
+INIT = QuotedString(quoteChar="=", endQuoteChar=";",escChar='\\')
+TYPE = COLON + (QUALIFIED_IDENTIFIER ^ STAR )
+VARIABLE_DEFINITION = Optional( IDENTIFIER ) + Optional( STATIC ^ CONST ) + VAR + IDENTIFIER  + Optional( TYPE ) + Optional( MULTI_LINE_COMMENT ) + ( INIT ^ TERMINATOR )
+USE_NAMESPACE = USE + NAMESPACE + fully_qualified_identifier + TERMINATOR
+METATAG = LSQUARE + IDENTIFIER + Optional( LPARN + delimitedList( Optional(IDENTIFIER + EQUAL) + VALUE ) + RPARN ) + RSQUARE
+INCLUDE_DEFINITION = INCLUDE + QuotedString(quoteChar="\"", escChar='\\') + TERMINATOR
+IMPORT_DEFINITION = IMPORT + QUALIFIED_IDENTIFIER("name") + Optional(DOT + STAR) + TERMINATOR
+BLOCK = Suppress( nestedExpr("{","}") )
+BASE_BLOCK = USE_NAMESPACE ^ COMMENTS ^ METATAG ^ INCLUDE_DEFINITION
+METHOD_MODIFIER = STATIC ^ OVERRIDE ^ FINAL
+METHOD_PARAMETERS = delimitedList( IDENTIFIER + TYPE + Optional( EQUAL + VALUE ) )
+METHOD_DEFINITION = Optional( METHOD_MODIFIER ) + Optional( IDENTIFIER ) + FUNCTION + Optional(GET ^ SET) + IDENTIFIER + LPARN + Optional( METHOD_PARAMETERS ) + RPARN + Optional( TYPE ) + BLOCK
+CLASS_IMPLEMENTS = IMPLEMENTS + delimitedList( QUALIFIED_IDENTIFIER )
+CLASS_BLOCK = LCURL + ZeroOrMore( BASE_BLOCK ^ VARIABLE_DEFINITION ^ METHOD_DEFINITION ) + RCURL
+CLASS_EXTENDS = EXTENDS + QUALIFIED_IDENTIFIER
+CLASS_DEFINITION = Optional(IDENTIFIER) + CLASS + QUALIFIED_IDENTIFIER + Optional( CLASS_EXTENDS ) + Optional( CLASS_IMPLEMENTS ) + CLASS_BLOCK
+PACKAGE_BLOCK = LCURL + ZeroOrMore( IMPORT_DEFINITION ^ BASE_BLOCK ^ CLASS_DEFINITION ) + RCURL
+PACKAGE_DEFINITION = (PACKAGE + Optional( QUALIFIED_IDENTIFIER ) + PACKAGE_BLOCK )
+PROGRAM = ZeroOrMore( COMMENTS.suppress() ) + PACKAGE_DEFINITION
+
+PROGRAM.parseFile("C:\\Projects\\asdox\\src\\tests\\resources\\Button.as")
