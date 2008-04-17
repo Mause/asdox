@@ -25,6 +25,7 @@
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 from pyparsing import *
+import os,fnmatch
 from asModel import *
 
 def parsePackage( s,l,t ):
@@ -68,6 +69,11 @@ def getField( s,l,t ):
 	fld.addMetaTag(m[0])
     fld.addModifier(t.kind)
     return fld
+def parseField( s,l,t ):
+    fld = ASField(t.name,t.type)
+    fld.addModifier(t.modifier)
+    fld.addModifier(t.kind)
+    return fld
 def getMethod( s,l,t ):
     fc = ASMethod(t.name,t.type[0])
     fc.setAccessor(t.accessor)
@@ -93,6 +99,12 @@ def getMetaData(s,l,t):
     return meta
 def parseJavaDoc(s,l,t):
     pass
+def test(s,l,t):
+    print t
+def locate(pattern, root=os.getcwd()):
+		for path, dirs, files in os.walk(root):
+			for filename in [os.path.abspath(os.path.join(path, filename)) for filename in files if fnmatch.fnmatch(filename, pattern)]:
+				yield filename
 COLON,LPARN,RPARN,LCURL,RCURL,EQUAL,SEMI,LSQUARE,RSQUARE = map(Suppress,":(){}=;[]")
 
 PACKAGE = Keyword("package")
@@ -195,28 +207,38 @@ SINGLE_LINE_COMMENT = dblSlashComment
 MULTI_LINE_COMMENT = cStyleComment
 JAVADOC_COMMENT = Regex(r"/\*\*(?:[^*]*\*+)+?/")
 COMMENTS = SINGLE_LINE_COMMENT ^ JAVADOC_COMMENT ^ MULTI_LINE_COMMENT
-DBL_QUOTED_STRING = QuotedString(quoteChar="\"", escChar='\\',unquoteResults=False)
-SINGLE_QUOTED_STRING = QuotedString(quoteChar="'", escChar='\\',unquoteResults=False)
+DBL_QUOTED_STRING = QuotedString(quoteChar="\"", escChar='\\')
+SINGLE_QUOTED_STRING = QuotedString(quoteChar="'", escChar='\\')
 ARRAY_INIT = LSQUARE + RSQUARE
 VALUE = floatnumber ^ QUALIFIED_IDENTIFIER ^ DBL_QUOTED_STRING ^ SINGLE_QUOTED_STRING ^ integer
 INIT = QuotedString(quoteChar="=", endQuoteChar=";",escChar='\\')
-TYPE = COLON + (QUALIFIED_IDENTIFIER ^ STAR )
-VARIABLE_DEFINITION = Optional( IDENTIFIER ) + Optional( STATIC ^ CONST ) + VAR + IDENTIFIER  + Optional( TYPE ) + Optional( MULTI_LINE_COMMENT ) + ( INIT ^ TERMINATOR )
+TYPE = COLON + (QUALIFIED_IDENTIFIER ^ STAR)
+VARIABLE_MODIFIER = IDENTIFIER
+VARIABLE_DEFINITION = Optional(VARIABLE_MODIFIER) + Optional(STATIC) + Optional(CONST ^ VAR) + IDENTIFIER  + Optional(TYPE) + Optional(MULTI_LINE_COMMENT) + (INIT ^ TERMINATOR)
 USE_NAMESPACE = USE + NAMESPACE + fully_qualified_identifier + TERMINATOR
-METATAG = LSQUARE + IDENTIFIER + Optional( LPARN + delimitedList( Optional(IDENTIFIER + EQUAL) + VALUE ) + RPARN ) + RSQUARE
+ATTRIBUTES = delimitedList( Optional(IDENTIFIER + EQUAL) + VALUE )
+METATAG = LSQUARE + IDENTIFIER + Optional( LPARN + ATTRIBUTES + RPARN ) + RSQUARE
 INCLUDE_DEFINITION = INCLUDE + QuotedString(quoteChar="\"", escChar='\\') + TERMINATOR
-IMPORT_DEFINITION = IMPORT + QUALIFIED_IDENTIFIER("name") + Optional(DOT + STAR) + TERMINATOR
+IMPORT_DEFINITION = IMPORT + QUALIFIED_IDENTIFIER + Optional(DOT + STAR) + TERMINATOR
 BLOCK = Suppress( nestedExpr("{","}") )
 BASE_BLOCK = USE_NAMESPACE ^ COMMENTS ^ METATAG ^ INCLUDE_DEFINITION
 METHOD_MODIFIER = STATIC ^ OVERRIDE ^ FINAL
 METHOD_PARAMETERS = delimitedList( IDENTIFIER + TYPE + Optional( EQUAL + VALUE ) )
-METHOD_DEFINITION = Optional( METHOD_MODIFIER ) + Optional( IDENTIFIER ) + FUNCTION + Optional(GET ^ SET) + IDENTIFIER + LPARN + Optional( METHOD_PARAMETERS ) + RPARN + Optional( TYPE ) + BLOCK
+METHOD_DEFINITION = Optional(METHOD_MODIFIER) & Optional(IDENTIFIER) + FUNCTION + Optional(GET ^ SET) + IDENTIFIER + LPARN + Optional(METHOD_PARAMETERS) + RPARN + Optional( TYPE ) + BLOCK
 CLASS_IMPLEMENTS = IMPLEMENTS + delimitedList( QUALIFIED_IDENTIFIER )
 CLASS_BLOCK = LCURL + ZeroOrMore( BASE_BLOCK ^ VARIABLE_DEFINITION ^ METHOD_DEFINITION ) + RCURL
 CLASS_EXTENDS = EXTENDS + QUALIFIED_IDENTIFIER
-CLASS_DEFINITION = Optional(IDENTIFIER) + CLASS + QUALIFIED_IDENTIFIER + Optional( CLASS_EXTENDS ) + Optional( CLASS_IMPLEMENTS ) + CLASS_BLOCK
+CLASS_MODIFIERS = Optional(FINAL) & Optional(PUBLIC)
+CLASS_DEFINITION = CLASS_MODIFIERS + CLASS + QUALIFIED_IDENTIFIER + Optional( CLASS_EXTENDS ) + Optional( CLASS_IMPLEMENTS ) + CLASS_BLOCK
 PACKAGE_BLOCK = LCURL + ZeroOrMore( IMPORT_DEFINITION ^ BASE_BLOCK ^ CLASS_DEFINITION ) + RCURL
-PACKAGE_DEFINITION = (PACKAGE + Optional( QUALIFIED_IDENTIFIER ) + PACKAGE_BLOCK )
+PACKAGE_DEFINITION = PACKAGE + Optional( QUALIFIED_IDENTIFIER ) + PACKAGE_BLOCK
 PROGRAM = ZeroOrMore( COMMENTS.suppress() ) + PACKAGE_DEFINITION
 
-PROGRAM.parseFile("C:\\Projects\\asdox\\src\\tests\\resources\\Button.as")
+
+files = locate("B*.as","C:\\flex_sdk_3\\frameworks\\projects\\framework\\src\\mx\\controls")
+for f in files:
+    print f
+    try:
+	PROGRAM.parseFile(f)
+    except ParseException, err:
+	print err
