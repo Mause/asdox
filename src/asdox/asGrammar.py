@@ -105,7 +105,7 @@ def locate(pattern, root=os.getcwd()):
 		for path, dirs, files in os.walk(root):
 			for filename in [os.path.abspath(os.path.join(path, filename)) for filename in files if fnmatch.fnmatch(filename, pattern)]:
 				yield filename
-COLON,LPARN,RPARN,LCURL,RCURL,EQUAL,SEMI,LSQUARE,RSQUARE = map(Suppress,":(){}=;[]")
+COMMA,COLON,LPARN,RPARN,LCURL,RCURL,EQUAL,SEMI,LSQUARE,RSQUARE = map(Suppress,",:(){}=;[]")
 
 PACKAGE = Keyword("package")
 CLASS = Keyword("class")
@@ -134,7 +134,8 @@ GET = Keyword("get")
 SET = Keyword("set")
 DOT = "."
 STAR = "*"
-TERMINATOR = SEMI ^ White("\r\n")
+REST = "..."
+TERMINATOR = Optional(SEMI)
 
 point = Literal('.')
 e = CaselessLiteral('E')
@@ -142,6 +143,7 @@ plusorminus = Literal('+') | Literal('-')
 number = Word(nums) 
 integer = Combine( Optional(plusorminus) + number )
 floatnumber = Combine( integer + Optional( point + Optional(number) ) + Optional( e + integer ) )
+HEX = "0x" + Word(hexnums)
 
 javaDocComment = Regex(r"/\*\*(?:[^*]*\*+)+?/").setParseAction(parseJavaDoc)
 comment = (dblSlashComment ^ cStyleComment).suppress()
@@ -210,11 +212,11 @@ COMMENTS = SINGLE_LINE_COMMENT ^ JAVADOC_COMMENT ^ MULTI_LINE_COMMENT
 DBL_QUOTED_STRING = QuotedString(quoteChar="\"", escChar='\\')
 SINGLE_QUOTED_STRING = QuotedString(quoteChar="'", escChar='\\')
 ARRAY_INIT = LSQUARE + RSQUARE
-VALUE = floatnumber ^ QUALIFIED_IDENTIFIER ^ DBL_QUOTED_STRING ^ SINGLE_QUOTED_STRING ^ integer
-INIT = QuotedString(quoteChar="=", endQuoteChar=";",escChar='\\')
+VALUE = floatnumber ^ QUALIFIED_IDENTIFIER ^ DBL_QUOTED_STRING ^ SINGLE_QUOTED_STRING ^ integer ^ HEX
+INIT = QuotedString(quoteChar="=", endQuoteChar=";",escChar='\\',multiline="true")
 TYPE = COLON + (QUALIFIED_IDENTIFIER ^ STAR)
-VARIABLE_MODIFIER = IDENTIFIER
-VARIABLE_DEFINITION = Optional(VARIABLE_MODIFIER) + Optional(STATIC) + Optional(CONST ^ VAR) + IDENTIFIER  + Optional(TYPE) + Optional(MULTI_LINE_COMMENT) + (INIT ^ TERMINATOR)
+VARIABLE_MODIFIER = Optional(STATIC) & Optional(IDENTIFIER)
+VARIABLE_DEFINITION = VARIABLE_MODIFIER + Optional(CONST ^ VAR) + IDENTIFIER  + Optional(TYPE) + Optional(MULTI_LINE_COMMENT) + (INIT ^ TERMINATOR)
 USE_NAMESPACE = USE + NAMESPACE + fully_qualified_identifier + TERMINATOR
 ATTRIBUTES = delimitedList( Optional(IDENTIFIER + EQUAL) + VALUE )
 METATAG = LSQUARE + IDENTIFIER + Optional( LPARN + ATTRIBUTES + RPARN ) + RSQUARE
@@ -222,23 +224,39 @@ INCLUDE_DEFINITION = INCLUDE + QuotedString(quoteChar="\"", escChar='\\') + TERM
 IMPORT_DEFINITION = IMPORT + QUALIFIED_IDENTIFIER + Optional(DOT + STAR) + TERMINATOR
 BLOCK = Suppress( nestedExpr("{","}") )
 BASE_BLOCK = USE_NAMESPACE ^ COMMENTS ^ METATAG ^ INCLUDE_DEFINITION
-METHOD_MODIFIER = STATIC ^ OVERRIDE ^ FINAL
-METHOD_PARAMETERS = delimitedList( IDENTIFIER + TYPE + Optional( EQUAL + VALUE ) )
-METHOD_DEFINITION = Optional(METHOD_MODIFIER) & Optional(IDENTIFIER) + FUNCTION + Optional(GET ^ SET) + IDENTIFIER + LPARN + Optional(METHOD_PARAMETERS) + RPARN + Optional( TYPE ) + BLOCK
+METHOD_MODIFIER = Optional(STATIC) & Optional(OVERRIDE) & Optional(FINAL) & Optional(IDENTIFIER) #& Optional(INTERNAL ^ PUBLIC ^ PRIVATE ^ PROTECTED) 
+METHOD_PARAMETERS = delimitedList( IDENTIFIER + TYPE + (Optional( EQUAL + VALUE ) & Optional(MULTI_LINE_COMMENT) ) )
+METHOD_SIGNATURE = FUNCTION + Optional(GET ^ SET) + IDENTIFIER + LPARN + Optional(METHOD_PARAMETERS) + Optional( Optional(COMMA) + REST + IDENTIFIER) + RPARN + Optional( TYPE )
+METHOD_DEFINITION = METHOD_MODIFIER + METHOD_SIGNATURE + Optional(COMMENTS) + BLOCK
 CLASS_IMPLEMENTS = IMPLEMENTS + delimitedList( QUALIFIED_IDENTIFIER )
 CLASS_BLOCK = LCURL + ZeroOrMore( BASE_BLOCK ^ VARIABLE_DEFINITION ^ METHOD_DEFINITION ) + RCURL
 CLASS_EXTENDS = EXTENDS + QUALIFIED_IDENTIFIER
-CLASS_MODIFIERS = Optional(FINAL) & Optional(PUBLIC)
+INTERFACE_EXTENDS = EXTENDS + delimitedList( QUALIFIED_IDENTIFIER )
+BASE_MODIFIERS = INTERNAL ^ PUBLIC
+CLASS_MODIFIERS = Optional(FINAL) & Optional(DYNAMIC) & Optional(BASE_MODIFIERS ^ PRIVATE ^ PROTECTED)
 CLASS_DEFINITION = CLASS_MODIFIERS + CLASS + QUALIFIED_IDENTIFIER + Optional( CLASS_EXTENDS ) + Optional( CLASS_IMPLEMENTS ) + CLASS_BLOCK
-PACKAGE_BLOCK = LCURL + ZeroOrMore( IMPORT_DEFINITION ^ BASE_BLOCK ^ CLASS_DEFINITION ) + RCURL
+INTERFACE_BLOCK = LCURL + ZeroOrMore( IMPORT_DEFINITION ^ BASE_BLOCK ^ VARIABLE_DEFINITION ^ (METHOD_SIGNATURE + TERMINATOR) ) + RCURL
+INTERFACE_DEFINITION = Optional(BASE_MODIFIERS) + INTERFACE + QUALIFIED_IDENTIFIER + Optional( INTERFACE_EXTENDS ) + INTERFACE_BLOCK
+PACKAGE_BLOCK = LCURL + ZeroOrMore( IMPORT_DEFINITION ^ BASE_BLOCK ^ CLASS_DEFINITION ^ INTERFACE_DEFINITION) + RCURL
 PACKAGE_DEFINITION = PACKAGE + Optional( QUALIFIED_IDENTIFIER ) + PACKAGE_BLOCK
 PROGRAM = ZeroOrMore( COMMENTS.suppress() ) + PACKAGE_DEFINITION
 
-
-files = locate("B*.as","C:\\flex_sdk_3\\frameworks\\projects\\framework\\src\\mx\\controls")
+PROGRAM.parseString("""
+package test
+{
+     public class testCodeSnippets
+     {
+     	//Add Code Snippet Here
+     	
+     }
+}
+""")
+files = locate("*.as","C:\\flex_sdk_3\\frameworks\\projects\\framework\\src\\mx\\core")
 for f in files:
-    print f
+    #print f
     try:
 	PROGRAM.parseFile(f)
     except ParseException, err:
+	print f
 	print err
+	#break
