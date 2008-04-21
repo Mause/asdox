@@ -80,6 +80,10 @@ class NamespaceModifiable:
 		return self.__namespace
 	def setNamespace(self,namespace):
 		self.__namespace = namespace
+class Visible:
+	visibility = "internal"
+	def __init__(self):
+		pass
 class Modifiable:
 	"Actionscript Object that can be modified"
 	__modifiers = set()
@@ -112,6 +116,17 @@ class Typeable:
 		self.__name = name
 	def getType(self):
 		return self.__type
+class ASType:
+	"Actionscript 3 Type"
+	name = "";
+	type = "";
+class ASVariable(ASType,Visible):
+	"Actionscript 3 Variable"
+	isStatic = False
+	isConstant = False
+class ASAccessor(ASVariable):
+	"Actionscript 3 Accessor"
+	access = "readwrite"
 class MetaTagable:
 	"Actionscript Object that allows for MetaTags"
 	__metaTags = dict()
