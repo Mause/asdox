@@ -99,8 +99,15 @@ def getMetaData(s,l,t):
     return meta
 def parseJavaDoc(s,l,t):
     pass
-def test(s,l,t):
-    print t
+def parseASVariable(s,l,t):
+    var = ASVariable()
+    var.name = t.name
+    var.type = t.type
+    var.kind = t.kind
+    var.visibility = t.visibility
+    if t.static == "static":
+	var.isStatic = True
+    return var
 def locate(pattern, root=os.getcwd()):
 		for path, dirs, files in os.walk(root):
 			for filename in [os.path.abspath(os.path.join(path, filename)) for filename in files if fnmatch.fnmatch(filename, pattern)]:
@@ -214,9 +221,9 @@ SINGLE_QUOTED_STRING = QuotedString(quoteChar="'", escChar='\\')
 ARRAY_INIT = LSQUARE + RSQUARE
 VALUE = floatnumber ^ QUALIFIED_IDENTIFIER ^ DBL_QUOTED_STRING ^ SINGLE_QUOTED_STRING ^ integer ^ HEX
 INIT = QuotedString(quoteChar="=", endQuoteChar=";",multiline="true") ^ (EQUAL + DBL_QUOTED_STRING + TERMINATOR)
-TYPE = COLON + (QUALIFIED_IDENTIFIER ^ STAR)
-VARIABLE_MODIFIER = Optional(STATIC) & Optional(IDENTIFIER)
-VARIABLE_DEFINITION = VARIABLE_MODIFIER + Optional(CONST ^ VAR) + IDENTIFIER  + Optional(TYPE) + Optional(MULTI_LINE_COMMENT) + (INIT ^ TERMINATOR)
+TYPE = COLON + (QUALIFIED_IDENTIFIER ^ STAR)("type")
+VARIABLE_MODIFIERS = Optional(STATIC("static")) & Optional(IDENTIFIER("visibility"))
+VARIABLE_DEFINITION = ( VARIABLE_MODIFIERS + Optional(CONST ^ VAR)("kind") + IDENTIFIER("name")  + Optional(TYPE) + Optional(MULTI_LINE_COMMENT) + (INIT ^ TERMINATOR)).setParseAction(parseASVariable)
 USE_NAMESPACE = USE + NAMESPACE + fully_qualified_identifier + TERMINATOR
 ATTRIBUTES = delimitedList( Optional(IDENTIFIER + EQUAL) + VALUE )
 METATAG = LSQUARE + IDENTIFIER + Optional( LPARN + ATTRIBUTES + RPARN ) + RSQUARE
@@ -224,7 +231,7 @@ INCLUDE_DEFINITION = INCLUDE + QuotedString(quoteChar="\"", escChar='\\') + TERM
 IMPORT_DEFINITION = IMPORT + QUALIFIED_IDENTIFIER + Optional(DOT + STAR) + TERMINATOR
 BLOCK = Suppress( nestedExpr("{","}") )
 BASE_BLOCK = USE_NAMESPACE ^ COMMENTS ^ METATAG ^ INCLUDE_DEFINITION
-METHOD_MODIFIER = Optional(STATIC) & Optional(OVERRIDE) & Optional(FINAL) & Optional(IDENTIFIER) #& Optional(INTERNAL ^ PUBLIC ^ PRIVATE ^ PROTECTED) 
+METHOD_MODIFIER = Optional(STATIC) ^ ( Optional(OVERRIDE) & Optional(FINAL) & Optional(IDENTIFIER) )
 METHOD_PARAMETERS = delimitedList( IDENTIFIER + TYPE + (Optional( EQUAL + VALUE ) & Optional(MULTI_LINE_COMMENT) ) )
 METHOD_SIGNATURE = FUNCTION + Optional(GET ^ SET) + IDENTIFIER + LPARN + Optional(METHOD_PARAMETERS) + Optional( Optional(COMMA) + REST + IDENTIFIER) + RPARN + Optional( TYPE ) + Optional(COMMENTS)
 METHOD_DEFINITION = METHOD_MODIFIER + METHOD_SIGNATURE  + BLOCK
@@ -233,7 +240,7 @@ CLASS_BLOCK = LCURL + ZeroOrMore( IMPORT_DEFINITION ^ BASE_BLOCK ^ VARIABLE_DEFI
 CLASS_EXTENDS = EXTENDS + QUALIFIED_IDENTIFIER
 INTERFACE_EXTENDS = EXTENDS + delimitedList( QUALIFIED_IDENTIFIER )
 BASE_MODIFIERS = INTERNAL ^ PUBLIC
-CLASS_MODIFIERS = Optional(FINAL) & Optional(DYNAMIC) & Optional(BASE_MODIFIERS ^ PRIVATE ^ PROTECTED)
+CLASS_MODIFIERS = Optional(FINAL) & Optional(DYNAMIC) & Optional(BASE_MODIFIERS)
 CLASS_DEFINITION = CLASS_MODIFIERS + CLASS + QUALIFIED_IDENTIFIER + Optional( CLASS_EXTENDS ) + Optional( CLASS_IMPLEMENTS ) + CLASS_BLOCK
 INTERFACE_BLOCK = LCURL + ZeroOrMore( IMPORT_DEFINITION ^ BASE_BLOCK ^ VARIABLE_DEFINITION ^ (METHOD_SIGNATURE + TERMINATOR) ) + RCURL
 INTERFACE_DEFINITION = Optional(BASE_MODIFIERS) + INTERFACE + QUALIFIED_IDENTIFIER + Optional( INTERFACE_EXTENDS ) + INTERFACE_BLOCK
@@ -244,7 +251,7 @@ PROGRAM = ZeroOrMore( COMMENTS ^ PACKAGE_DEFINITION )
 PROGRAM.parseString("""
 
 """)
-files = locate("*.as","C:\\flex_sdk_3\\frameworks\\projects\\framework\\src\\mx")
+files = locate("DataGrid.as","C:\\flex_sdk_3\\frameworks\\projects\\framework\\src\\mx\\controls")
 for f in files:
     print f
     try:
