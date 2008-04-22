@@ -116,52 +116,30 @@ class Typeable:
 		self.__name = name
 	def getType(self):
 		return self.__type
-class ASType(Visible):
-	"Actionscript 3 Type"
-	name = "";
-	type = "";
-class ASVariable(ASType):
-	"Actionscript 3 Variable"
-	isStatic = False
-	isConstant = False
-class ASAccessor(ASType):
-	"Actionscript 3 Accessor"
-	access = "readwrite"
-	isOverride = False
-	isFinal = False
 class MetaTagable:
 	"Actionscript Object that allows for MetaTags"
-	__metaTags = dict()
-	def __init__(self):
-		self.__metaTags = dict()
-	def addMetaTag(self,tag):
-		self.__metaTags[tag.getName()] = tag
-	def removeMetaTag(self,name):
-		del self.__metaTags[name]
-	def getMetaTag(self,name):
-		return self.__metaTags.get(name,None)
-	def getMetaTags(self):
-		return self.__metaTags
-	def hasMetaTag(self,name):
-		return name in self.__metaTags
-class ASMetaTag(Typeable):
+	metadata = []
+class ASType:
+	"Actionscript 3 Type"
+	def __init__(self,name,type):
+		self.name = name
+		self.type = type
+	name = "";
+	type = "";
+class ASVariable(ASType,Visible,MetaTagable):
+	"Actionscript 3 Variable"
+	def __init__(self, name = "", type = "*"):
+		self.name = name
+		self.type = type
+		self.metadata = []
+	isStatic = False
+	isConstant = False
+class ASMetaTag:
 	"Actionscript MetaTag Definition"
-	__params = dict()
+	params = dict()
+	name = ""
 	def __init__(self,name = ""):
-		self.__params = dict()
-		self._Typeable__name = name
-		self._Typeable__type = "metatag"
-	def addParam(self,value,key = None):
-		if key == None:
-			self.__params[len(self.__params)] = value
-		else:
-			self.__params[key] = value
-	def getParam(self,name):
-		return self.__params[name]
-	def getParams(self):
-		return self.__params
-	def hasParam(self,name):
-		return name in self.__params
+		self.name = name
 class ASPackage(Typeable,Includable,Namespacable):
 	"Actionscript Package Definition"
 	__classes = dict()
@@ -190,83 +168,19 @@ class ASPackage(Typeable,Includable,Namespacable):
 		self.__imports.discard(name)
 	def getImports(self):
 		return self.__imports
-class ASClass(Typeable,Modifiable,MetaTagable,Documentable,Includable,Namespacable,Implementable):
+class ASClass(Visible,MetaTagable):
 	"Actionscript Class Definition"
-	__fields = dict()
-	__methods = dict()
-	__getters = dict()
-	__setters = dict()
-	__extends = "Object"
-	def __init__(self,name = ""):
-		self.__fields = dict()
-		self.__methods = dict()
-		self.__getters = dict()
-		self.__setters = dict()
-		self.__extends = "Object"
-		self._Typeable__name = name
-		self._Typeable__type = "class"
-		self._MetaTagable__metaTags = dict()
-		self._Modifiable__modifiers.add("internal")
-		self._Modifiable__ACCESS_MODIFIERS = set(['public','internal'])
-		self._Modifiable__TYPE_MODIFIERS =  set(['final','dynamic'])
-		self._Includable__includes = set()
-		self._Namespacable__namespaces = dict()
-		self._Namespacable__used_namespaces = set()
-		self._Implementable__implements = set()
-	def addField(self,field):
-		self.__fields[field.getName()] = field
-	def removeField(self,name):
-		del self.__fields[name]
-	def getField(self,name):
-		return self.__fields.get(name,None)
-	def getFields(self):
-		return self.__fields
-	def hasField(self,name):
-		return name in self.__fields
-	def addMethod(self,method):
-		if method.getAccessor() == "set":
-			self.__setters[method.getName()] = method
-		elif method.getAccessor() == "get":
-			self.__getters[method.getName()] = method
-		else:
-			self.__methods[method.getName()] = method
-	def removeMethod(self,name):
-		del self.__methods[name]
-	def getMethod(self,name):
-		return self.__methods.get(name,None)
-	def getMethods(self):
-		return self.__methods
-	def hasMethod(self,name):
-		return name in self.__methods
-	def hasGetter(self,name):
-		return name in self.__getters
-	def hasSetter(self,name):
-		return name in self.__setters
-	def getGetter(self,name):
-		return self.__getters.get(name,None)
-	def getSetter(self,name):
-		return self.__setters.get(name,None)
-	def getGetters(self):
-		return self.__getters
-	def getSetters(self):
-		return self.__setters
-	def getExtends(self):
-		return self.__extends
-	def setExtends(self,name):
-		self.__extends = name
-	def isDynamic(self):
-		return self.hasModifier("dynamic")
-	def isFinal(self):
-		return self.hasModifier("final")
-	def isPublic(self):
-		return self.hasModifier("public")
-	def isInterface(self):
-		return self._Typeable__type == "interface"
-	def setInterface(self,yes):
-		if yes == True:
-			self._Typeable__type = "interface"
-		else:
-			self._Typeable__type = "class"
+	name = ""
+	variables = []
+	methods = []
+	extends = ""
+	implements = []
+	isDynamic = False
+	isFinal = False
+	isInterface = False
+	def __init__(self, name = ""):
+		self.name = name
+		self.metadata = []
 class ASNamespace(Typeable,Modifiable):
 	"Actionscript Namespace Definition"
 	def __init__(self, name = ""):
@@ -288,11 +202,15 @@ class ASField(Typeable,Modifiable,MetaTagable,Documentable,NamespaceModifiable):
 		return self.hasModifier("static")
 	def isConstant(self):
 		return self.hasModifier("const")	
-class ASArg:
-	name = ""
-	type = ""
-class ASMethod(ASType):
+class ASMethod(ASType,Visible,MetaTagable):
 	"Actionscript Method Definition"
 	arguments = dict()
-	
+	accessor = None
+	isOverride = False
+	isFinal = False
+	isStatic = False
+	def __init__(self, name = "", type = "void"):
+		self.name = name
+		self.type = type
+		self.metadata = []
 	
