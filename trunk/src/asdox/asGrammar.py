@@ -89,6 +89,11 @@ def getMethod( s,l,t ):
 def getArgument(s,l,t):
     arg = ASArg(t.name,t.type[0])
     return arg
+def parseASArg(s,l,t):
+    arg = ASArg()
+    arg.name = t.name
+    arg.type = t.type
+    return arg
 def getMetaData(s,l,t):
     meta = ASMetaTag(t.name)
     for att in t.attributes:
@@ -99,6 +104,24 @@ def getMetaData(s,l,t):
     return meta
 def parseJavaDoc(s,l,t):
     pass
+def parseASMethod(s,l,t):
+    unit = ASType()
+    if t.accessor:
+	unit = ASAccessor()
+	if t.accessor == "get":
+	    unit.access = "readonly"
+	elif t.accessor == "set":
+	    unit.access = "writeonly"
+	print unit.access
+    else:
+	unit = ASMethod()
+    unit.name = t.name
+    unit.type = t.type
+    unit.visibility = t.visibility
+    if t.override:
+	unit.isOverride = True
+    if t.final:
+	unit.isFinal = True
 def parseASVariable(s,l,t):
     var = ASVariable()
     var.name = t.name
@@ -107,7 +130,6 @@ def parseASVariable(s,l,t):
     var.visibility = t.visibility
     if t.static == "static":
 	var.isStatic = True
-    return var
 def locate(pattern, root=os.getcwd()):
 		for path, dirs, files in os.walk(root):
 			for filename in [os.path.abspath(os.path.join(path, filename)) for filename in files if fnmatch.fnmatch(filename, pattern)]:
@@ -231,10 +253,10 @@ INCLUDE_DEFINITION = INCLUDE + QuotedString(quoteChar="\"", escChar='\\') + TERM
 IMPORT_DEFINITION = IMPORT + QUALIFIED_IDENTIFIER + Optional(DOT + STAR) + TERMINATOR
 BLOCK = Suppress( nestedExpr("{","}") )
 BASE_BLOCK = USE_NAMESPACE ^ COMMENTS ^ METATAG ^ INCLUDE_DEFINITION
-METHOD_MODIFIER = Optional(STATIC) ^ ( Optional(OVERRIDE) & Optional(FINAL) & Optional(IDENTIFIER) )
-METHOD_PARAMETERS = delimitedList( IDENTIFIER + TYPE + (Optional( EQUAL + VALUE ) & Optional(MULTI_LINE_COMMENT) ) )
-METHOD_SIGNATURE = FUNCTION + Optional(GET ^ SET) + IDENTIFIER + LPARN + Optional(METHOD_PARAMETERS) + Optional( Optional(COMMA) + REST + IDENTIFIER) + RPARN + Optional( TYPE ) + Optional(COMMENTS)
-METHOD_DEFINITION = METHOD_MODIFIER + METHOD_SIGNATURE  + BLOCK
+METHOD_MODIFIER = Optional(STATIC("static")) ^ ( Optional(OVERRIDE("override")) & Optional(FINAL("final")) & Optional(IDENTIFIER("visibility")) )
+METHOD_PARAMETERS = ( IDENTIFIER("name") + TYPE("type") + (Optional( EQUAL + VALUE ) & Optional(MULTI_LINE_COMMENT) ) ).setParseAction(parseASArg)
+METHOD_SIGNATURE = FUNCTION + Optional(GET ^ SET)("accessor") + IDENTIFIER("name") + LPARN + Optional(delimitedList(METHOD_PARAMETERS)) + Optional( Optional(COMMA) + REST + IDENTIFIER) + RPARN + Optional( TYPE ) + Optional(COMMENTS)
+METHOD_DEFINITION = (METHOD_MODIFIER + METHOD_SIGNATURE  + BLOCK).setParseAction(parseASMethod)
 CLASS_IMPLEMENTS = IMPLEMENTS + delimitedList( QUALIFIED_IDENTIFIER )
 CLASS_BLOCK = LCURL + ZeroOrMore( IMPORT_DEFINITION ^ BASE_BLOCK ^ VARIABLE_DEFINITION ^ METHOD_DEFINITION ) + RCURL
 CLASS_EXTENDS = EXTENDS + QUALIFIED_IDENTIFIER
