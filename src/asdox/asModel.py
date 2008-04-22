@@ -116,17 +116,19 @@ class Typeable:
 		self.__name = name
 	def getType(self):
 		return self.__type
-class ASType:
+class ASType(Visible):
 	"Actionscript 3 Type"
 	name = "";
 	type = "";
-class ASVariable(ASType,Visible):
+class ASVariable(ASType):
 	"Actionscript 3 Variable"
 	isStatic = False
 	isConstant = False
-class ASAccessor(ASVariable):
+class ASAccessor(ASType):
 	"Actionscript 3 Accessor"
 	access = "readwrite"
+	isOverride = False
+	isFinal = False
 class MetaTagable:
 	"Actionscript Object that allows for MetaTags"
 	__metaTags = dict()
@@ -286,33 +288,11 @@ class ASField(Typeable,Modifiable,MetaTagable,Documentable,NamespaceModifiable):
 		return self.hasModifier("static")
 	def isConstant(self):
 		return self.hasModifier("const")	
-class ASArg(Typeable):
-	def __init__(self, name = "", type = "*"):
-		self._Typeable__name = name
-		self._Typeable__type = type
-class ASMethod(Typeable,Modifiable,MetaTagable,Documentable,NamespaceModifiable):
+class ASArg:
+	name = ""
+	type = ""
+class ASMethod(ASType):
 	"Actionscript Method Definition"
-	__args = dict()
-	__accessor = ""
-	def __init__(self, name = "", type = "void"):
-		self.__args = dict()
-		self.__access = ""
-		self._Typeable__name = name
-		self._Typeable__type = type
-		self._MetaTagable__metaTags = dict()
-		self._NamespaceModifiable__namespace = None
-		self._Modifiable__modifiers = set()
-		self._Modifiable__ACCESS_MODIFIERS = set(['public','internal','private','protected','mx_internal'])
-		self._Modifiable__TYPE_MODIFIERS =  set(['final','override','static'])
-	def addArgument(self,arg):
-		self.__args[arg.getName()] = arg
-	def removeArgument(self,name):
-		del self.__args[name]
-	def getArgument(self,name):
-		return self.__args.get(name,None)
-	def getArguments(self):
-		return self.__args
-	def setAccessor(self,name):
-		self.__accessor = name
-	def getAccessor(self):
-		return self.__accessor
+	arguments = dict()
+	
+	
