@@ -28,6 +28,11 @@ from pyparsing import *
 import os,fnmatch
 from asModel import *
 
+stack = []
+metatags = []
+variables = []
+methods = []
+classes = []
 def parsePackage( s,l,t ):
     pkg = ASPackage(t.name)
     if len(t.classes) > 0:
@@ -38,6 +43,15 @@ def parsePackage( s,l,t ):
     for inc in t.includes:
 	pkg.addInclude(inc)
     return pkg
+def parseASClass( s,l,t):
+    cls = ASClass(t.name)
+    cls.extends = t.extends
+    cls.implements = t.implements[0]
+    cls.visibility = t.visibility
+    while metatags:
+	tag= metatags.pop()
+	cls.metadata.append(tag)
+    classes.append(cls)
 def parseClass( s,l,t ):
     cls = ASClass(t.name)
     if t.type == "interface":
@@ -90,46 +104,48 @@ def getArgument(s,l,t):
     arg = ASArg(t.name,t.type[0])
     return arg
 def parseASArg(s,l,t):
-    arg = ASArg()
-    arg.name = t.name
-    arg.type = t.type
+    arg = ASType(t.name,t.type)
     return arg
-def getMetaData(s,l,t):
+def parseASMetaTag(s,l,t):
     meta = ASMetaTag(t.name)
+    index = 0
     for att in t.attributes:
 	if att.key == "":
-	    meta.addParam(att.value)
+	    meta.params[index] = att.value
 	else:
-	    meta.addParam(att.value,att.key)
-    return meta
+	    meta.params[att.key] = att.value
+	index = index + 1
+    metatags.append(meta)
 def parseJavaDoc(s,l,t):
     pass
 def parseASMethod(s,l,t):
-    unit = ASType()
-    if t.accessor:
-	unit = ASAccessor()
-	if t.accessor == "get":
-	    unit.access = "readonly"
-	elif t.accessor == "set":
-	    unit.access = "writeonly"
-	print unit.access
-    else:
-	unit = ASMethod()
-    unit.name = t.name
-    unit.type = t.type
-    unit.visibility = t.visibility
+    meth = ASMethod(t.name,t.type)
+    meth.visibility = t.visibility
     if t.override:
-	unit.isOverride = True
+	meth.isOverride = True
     if t.final:
-	unit.isFinal = True
+	meth.isFinal = True
+    if t.static:
+	meth.isStatic = True
+    while metatags:
+	tag= metatags.pop()
+	meth.metadata.append(tag)
+    for arg in t.arguments:
+	meth.arguments[arg.name] =  arg[0]
+    meth.accessor = t.accessor
+    stack.append(meth)
+    classes[0].methods.append(meth)
 def parseASVariable(s,l,t):
-    var = ASVariable()
-    var.name = t.name
-    var.type = t.type
+    var = ASVariable(t.name,t.type)
     var.kind = t.kind
     var.visibility = t.visibility
     if t.static == "static":
 	var.isStatic = True
+    while metatags:
+	tag= metatags.pop()
+	var.metadata.append(tag)
+    stack.append(var)
+    classes[0].variables.append(var)
 def locate(pattern, root=os.getcwd()):
 		for path, dirs, files in os.walk(root):
 			for filename in [os.path.abspath(os.path.join(path, filename)) for filename in files if fnmatch.fnmatch(filename, pattern)]:
@@ -184,7 +200,7 @@ type = COLON + (identifier ^ STAR )
 
 attribute = floatnumber ^ fully_qualified_identifier ^ QuotedString(quoteChar="\"", escChar='\\',unquoteResults=False) ^ QuotedString(quoteChar="'", escChar='\\',unquoteResults=False) ^ integer
 metadata_attributes = LPARN + delimitedList( Group(Optional(identifier("key") + EQUAL) + attribute("value")).setResultsName("attributes",listAllMatches="true") ) + RPARN
-metadata = ( Optional(javaDocComment) + LSQUARE + identifier("name") + Optional( metadata_attributes ) + RSQUARE).setParseAction(getMetaData)
+metadata = Optional(javaDocComment) + LSQUARE + identifier("name") + Optional( metadata_attributes ) + RSQUARE
 
 variable_kind = VAR ^ CONST
 variable_init = EQUAL + Optional( QuotedString(quoteChar="\"", escChar='\\') ^ integer  ^ floatnumber ^ fully_qualified_identifier)
@@ -236,7 +252,7 @@ IDENTIFIER = Word(alphas + '_',alphanums + '_')
 QUALIFIED_IDENTIFIER = Combine(IDENTIFIER + ZeroOrMore( DOT + IDENTIFIER ))
 SINGLE_LINE_COMMENT = dblSlashComment
 MULTI_LINE_COMMENT = cStyleComment
-JAVADOC_COMMENT = Regex(r"/\*\*(?:[^*]*\*+)+?/")
+JAVADOC_COMMENT = (Regex(r"/\*\*(?:[^*]*\*+)+?/")).setParseAction(parseJavaDoc)
 COMMENTS = SINGLE_LINE_COMMENT ^ JAVADOC_COMMENT ^ MULTI_LINE_COMMENT
 DBL_QUOTED_STRING = QuotedString(quoteChar="\"", escChar='\\')
 SINGLE_QUOTED_STRING = QuotedString(quoteChar="'", escChar='\\')
@@ -247,23 +263,23 @@ TYPE = COLON + (QUALIFIED_IDENTIFIER ^ STAR)("type")
 VARIABLE_MODIFIERS = Optional(STATIC("static")) & Optional(IDENTIFIER("visibility"))
 VARIABLE_DEFINITION = ( VARIABLE_MODIFIERS + Optional(CONST ^ VAR)("kind") + IDENTIFIER("name")  + Optional(TYPE) + Optional(MULTI_LINE_COMMENT) + (INIT ^ TERMINATOR)).setParseAction(parseASVariable)
 USE_NAMESPACE = USE + NAMESPACE + fully_qualified_identifier + TERMINATOR
-ATTRIBUTES = delimitedList( Optional(IDENTIFIER + EQUAL) + VALUE )
-METATAG = LSQUARE + IDENTIFIER + Optional( LPARN + ATTRIBUTES + RPARN ) + RSQUARE
+ATTRIBUTES =  (Optional(IDENTIFIER("key") + EQUAL) + VALUE("value") ).setResultsName("attributes",listAllMatches="true")
+METATAG = (LSQUARE + IDENTIFIER("name") + Optional( LPARN + delimitedList(ATTRIBUTES) + RPARN ) + RSQUARE).setParseAction(parseASMetaTag)
 INCLUDE_DEFINITION = INCLUDE + QuotedString(quoteChar="\"", escChar='\\') + TERMINATOR
 IMPORT_DEFINITION = IMPORT + QUALIFIED_IDENTIFIER + Optional(DOT + STAR) + TERMINATOR
 BLOCK = Suppress( nestedExpr("{","}") )
 BASE_BLOCK = USE_NAMESPACE ^ COMMENTS ^ METATAG ^ INCLUDE_DEFINITION
 METHOD_MODIFIER = Optional(STATIC("static")) ^ ( Optional(OVERRIDE("override")) & Optional(FINAL("final")) & Optional(IDENTIFIER("visibility")) )
-METHOD_PARAMETERS = ( IDENTIFIER("name") + TYPE("type") + (Optional( EQUAL + VALUE ) & Optional(MULTI_LINE_COMMENT) ) ).setParseAction(parseASArg)
-METHOD_SIGNATURE = FUNCTION + Optional(GET ^ SET)("accessor") + IDENTIFIER("name") + LPARN + Optional(delimitedList(METHOD_PARAMETERS)) + Optional( Optional(COMMA) + REST + IDENTIFIER) + RPARN + Optional( TYPE ) + Optional(COMMENTS)
+METHOD_PARAMETERS = IDENTIFIER("name") + TYPE + (Optional( EQUAL + VALUE ) & Optional(MULTI_LINE_COMMENT) )
+METHOD_SIGNATURE = FUNCTION + Optional(GET ^ SET)("accessor") + IDENTIFIER("name") + LPARN + Optional(delimitedList(METHOD_PARAMETERS.setParseAction(parseASArg)).setResultsName("arguments",listAllMatches="true")) + Optional( Optional(COMMA) + REST + IDENTIFIER) + RPARN + Optional( TYPE ) + Optional(COMMENTS)
 METHOD_DEFINITION = (METHOD_MODIFIER + METHOD_SIGNATURE  + BLOCK).setParseAction(parseASMethod)
-CLASS_IMPLEMENTS = IMPLEMENTS + delimitedList( QUALIFIED_IDENTIFIER )
+CLASS_IMPLEMENTS = IMPLEMENTS + delimitedList( QUALIFIED_IDENTIFIER ).setResultsName("implements",listAllMatches="true")
 CLASS_BLOCK = LCURL + ZeroOrMore( IMPORT_DEFINITION ^ BASE_BLOCK ^ VARIABLE_DEFINITION ^ METHOD_DEFINITION ) + RCURL
-CLASS_EXTENDS = EXTENDS + QUALIFIED_IDENTIFIER
+CLASS_EXTENDS = EXTENDS + QUALIFIED_IDENTIFIER("extends")
 INTERFACE_EXTENDS = EXTENDS + delimitedList( QUALIFIED_IDENTIFIER )
 BASE_MODIFIERS = INTERNAL ^ PUBLIC
-CLASS_MODIFIERS = Optional(FINAL) & Optional(DYNAMIC) & Optional(BASE_MODIFIERS)
-CLASS_DEFINITION = CLASS_MODIFIERS + CLASS + QUALIFIED_IDENTIFIER + Optional( CLASS_EXTENDS ) + Optional( CLASS_IMPLEMENTS ) + CLASS_BLOCK
+CLASS_MODIFIERS = Optional(FINAL("final")) & Optional(DYNAMIC("dynamic")) & Optional(BASE_MODIFIERS("visibility"))
+CLASS_DEFINITION = (CLASS_MODIFIERS + CLASS + QUALIFIED_IDENTIFIER("name") + Optional( CLASS_EXTENDS ) + Optional( CLASS_IMPLEMENTS ) ).setParseAction(parseASClass) + CLASS_BLOCK
 INTERFACE_BLOCK = LCURL + ZeroOrMore( IMPORT_DEFINITION ^ BASE_BLOCK ^ VARIABLE_DEFINITION ^ (METHOD_SIGNATURE + TERMINATOR) ) + RCURL
 INTERFACE_DEFINITION = Optional(BASE_MODIFIERS) + INTERFACE + QUALIFIED_IDENTIFIER + Optional( INTERFACE_EXTENDS ) + INTERFACE_BLOCK
 PACKAGE_BLOCK = LCURL + ZeroOrMore( IMPORT_DEFINITION ^ BASE_BLOCK ^ CLASS_DEFINITION ^ INTERFACE_DEFINITION) + RCURL
@@ -281,3 +297,9 @@ for f in files:
     except ParseException, err:
 	print err
 	#break
+
+for cls in classes:
+    print cls.name
+    for o in cls.methods:
+	print o.metadata
+	print o.name
