@@ -126,6 +126,16 @@ class ASType:
 		self.type = type
 	name = "";
 	type = "";
+class ASProperty(ASType,Visible,MetaTagable):
+	"Actionscript getter/setter"
+	readable = False
+	writable = False
+	def __init__(self, name = "", type = "*"):
+		self.name = name
+		self.type = type
+		self.metadata = []
+		self.readable = False
+		self.writable = False
 class ASVariable(ASType,Visible,MetaTagable):
 	"Actionscript 3 Variable"
 	def __init__(self, name = "", type = "*"):
@@ -140,39 +150,13 @@ class ASMetaTag:
 	name = ""
 	def __init__(self,name = ""):
 		self.name = name
-class ASPackage(Typeable,Includable,Namespacable):
-	"Actionscript Package Definition"
-	__classes = dict()
-	__imports = set()
-	def __init__(self,name = ""):
-		self.__classes = dict()
-		self.__imports = set()
-		self._Typeable__name = name;
-		self._Typeable__type = "package";
-		self._Includable__includes = set()
-		self._Namespacable__namespaces = dict()
-		self._Namespacable__used_namespaces = set()
-	def addClass(self,cls):
-		self.__classes[cls.getName()] = cls
-	def removeClass(self,name):
-		del self.__classes[name]
-	def getClass(self,name):
-		return self.__classes.get(name,None)
-	def getClasses(self):
-		return self.__classes
-	def hasClass(self,name):
-		return name in self.__classes
-	def addImport(self,name):
-		self.__imports.add(name)
-	def removeImport(self,name):
-		self.__imports.discard(name)
-	def getImports(self):
-		return self.__imports
+		self.params = dict()
 class ASClass(Visible,MetaTagable):
 	"Actionscript Class Definition"
 	name = ""
-	variables = []
-	methods = []
+	variables = dict()
+	methods = dict()
+	properties = dict()
 	extends = ""
 	implements = []
 	isDynamic = False
@@ -181,31 +165,48 @@ class ASClass(Visible,MetaTagable):
 	def __init__(self, name = ""):
 		self.name = name
 		self.metadata = []
+		self.variables = dict()
+		self.methods = dict()
+		self.properties = dict()
+		self.extends = ""
+		self.implements = []
+		self.isDynamic = False
+		self.isFinal = False
+		self.isInterface = False
+class ASPackage(Visible,MetaTagable):
+	"Actionscript Package Definition"
+	cls = ASClass()
+	imports = []
+	def __init__(self, name = ""):
+		self.name = name
+		self.metadata = []
+		self.cls = ASClass()
+		self.imports = []
+	def toString(self):
+		print "Package: " + self.name
+		print self.cls.visibility + " class " + self.cls.name + " implements " + str(self.cls.implements)
+		for meta in self.cls.metadata:
+			print "\t\t[" + meta.name + "]"
+		for meth in self.cls.methods:
+			for meta in meth.metadata:
+				print "\t\t[" + meta.name + "]"
+			print "\t\tMethod: " + meth.visibility + " " + meth.name + ":" + meth.type
+			for arg in meth.arguments.values():
+				print "\t\t\tArguments: " + arg.name + ":" + arg.type
+		for var in self.cls.variables:
+			for meta in var.metadata:
+				print "\t\t[" + meta.name + "]"
+			print "\t\tVariables: " + var.visibility + " " + var.name + ":" + var.type
 class ASNamespace(Typeable,Modifiable):
 	"Actionscript Namespace Definition"
 	def __init__(self, name = ""):
 		self._Typeable__name = name;
 		self._Typeable__type = "namespace"
 		self._Modifiable__modifiers = set()
-		self._Modifiable__ACCESS_MODIFIERS = set(['public','internal','private','protected'])
-class ASField(Typeable,Modifiable,MetaTagable,Documentable,NamespaceModifiable):
-	"Actionscript Field Definition"
-	def __init__(self, name = "", type = "*"):
-		self._Typeable__name = name
-		self._Typeable__type = type
-		self._Modifiable__modifiers.add("internal")
-		self._MetaTagable__metaTags = dict()
-		self._Modifiable__ACCESS_MODIFIERS = set(['public','internal','private','protected','mx_internal'])
-		self._Modifiable__TYPE_MODIFIERS =  set(['static','const'])
-		self._NamespaceModifiable__namespace = None
-	def isStatic(self):
-		return self.hasModifier("static")
-	def isConstant(self):
-		return self.hasModifier("const")	
+		self._Modifiable__ACCESS_MODIFIERS = set(['public','internal','private','protected'])	
 class ASMethod(ASType,Visible,MetaTagable):
 	"Actionscript Method Definition"
 	arguments = dict()
-	accessor = None
 	isOverride = False
 	isFinal = False
 	isStatic = False
@@ -213,4 +214,5 @@ class ASMethod(ASType,Visible,MetaTagable):
 		self.name = name
 		self.type = type
 		self.metadata = []
+		self.arguments = dict()
 	
