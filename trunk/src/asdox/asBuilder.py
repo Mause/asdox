@@ -24,17 +24,15 @@
 # LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-import asGrammar,os,fnmatch
+import asGrammar,os,fnmatch,asModel
 
 class Builder:
 	"Actionscript Source Builder"
 	sources = list()
-	model = list()
-	__packages = dict()
+	packages = {}
 	def __init__(self):
-		self.model[:] = []
 		self.sources[:] = []
-		self.__packages = dict()
+		self.packages = {}
 	def addSource(self,source,pattern = "*.as"):
 		try:
 			try:
@@ -55,31 +53,16 @@ class Builder:
 				self.parseSource( source )
 	def parseSource(self,src):
 		self.sources.append( src )
-		results = asGrammar.source.parseString(src)
-		
-		for obj in results:
-			self.model.append(obj)
-			if obj.getType() == "package":
-				# Test if package currently exists in dictionary
-				if obj.getName() in self.__packages:
-					curPkg = self.__packages[obj.getName()]
-					for cls in obj.getClasses().items():
-						if curPkg.hasClass(cls[1].getName()):
-							# Do nothing if class already exists
-							pass
-						else:
-							curPkg.addClass(cls[1])
-				else:
-					# Add package object to dictionary using the 
-					# package name as the key.
-					self.__packages[obj.getName()] = obj
-		return results
-	def getPackage(self,name):
-		return self.__packages.get(name,None)
-	def getPackages(self):
-		return self.__packages
-	def hasPackage(self,name):
-		return name in self.__packages
+		asGrammar.PROGRAM.parseString(src)
+		pkg = asGrammar.package
+		asGrammar.package = asModel.ASPackage()
+		print pkg.classes
+		if pkg.name in self.packages:
+			print pkg.classes
+			for cls in pkg.classes.values():
+				self.packages[pkg.name].classes[cls.name] = cls
+		else:
+			self.packages[pkg.name] = pkg
 	def locate(self,pattern, root=os.getcwd()):
 		for path, dirs, files in os.walk(root):
 			for filename in [os.path.abspath(os.path.join(path, filename)) for filename in files if fnmatch.fnmatch(filename, pattern)]:
