@@ -38,25 +38,24 @@ class ASClassTestCase(BaseTestCase):
 		self.builder.addSource("""
 		package com.gurufaction.mypackage
 		{
-			public class MyClass
+			public class MyBasicClass
 			{
 				
 			}
 		}
 		""")
 		
-		self.assertEqual(self.builder.hasPackage("com.gurufaction.mypackage"),True,"Package 'com.gurufaction.mypackage' not found.")
-		pkg = self.builder.getPackage("com.gurufaction.mypackage")
-		self.assertEqual(pkg.hasClass("MyClass"),True,"Class 'MyClass' not found in package.")
-		cls = pkg.getClass("MyClass")
-		self.assertEqual(cls.getName(),"MyClass","Class name not equal to 'MyClass'.")
-		self.assertEqual(cls.getType(),"class","Class type not equal to 'class'.")
-		self.assertEqual(cls.isPublic(),True,"Class is not public")
-		self.assertEqual(cls.getName(),"MyClass","Class name not equal to 'MyClass'.")
-		self.assertEqual(cls.isDynamic(),False,"Class should not be dynamic.")
-		self.assertEqual(cls.isFinal(),False,"Class should not be final.")
-		self.assertEqual(len(cls.getFields()),0,"Class should contain no fields.")
-		self.assertEqual(len(cls.getMethods()),0,"Class should contain no methods.")
+		self.assertEqual("com.gurufaction.mypackage" in self.builder.packages,True,"Package 'com.gurufaction.mypackage' not found.")
+		pkg = self.builder.packages["com.gurufaction.mypackage"]
+		self.assertEqual("MyBasicClass" in pkg.classes,True,"Class 'MyBasicClass' not found.")
+		cls = pkg.classes["MyBasicClass"]
+		self.assertEqual(cls.name,"MyBasicClass","Class name not equal to 'MyBasicClass'.")
+		self.assertEqual(cls.isInterface,False,"Class type not equal to 'class'.")
+		self.assertEqual(cls.visibility,"public","Class is not public")
+		self.assertEqual(cls.isDynamic,False,"Class should not be dynamic.")
+		self.assertEqual(cls.isFinal,False,"Class should not be final.")
+		self.assertEqual(len(cls.variables),0,"Class should contain no fields.")
+		self.assertEqual(len(cls.methods),0,"Class should contain no methods.")
 	def testClassMetadataJavaDocComment(self):
 		self.builder.addSource("""
 		package test
@@ -75,24 +74,10 @@ class ASClassTestCase(BaseTestCase):
 			}
 		}
 		""")
-		# Test Package 'test'
-		self.assertEqual(self.builder.hasPackage("test"),True,"Package 'test' not found.")
-		pkg = self.builder.getPackage("test")
-		self.assertEqual(pkg.getName(),"test","Package name not equal to 'test'.")
-		self.assertEqual(pkg.getType(),"package","Package type not equal to 'package'.")
-		# Test Class 'MyClass'
-		self.assertEqual(pkg.hasClass("MyClass"),True,"Class 'MyClass' not found.")
-		cls = pkg.getClass("MyClass")
-		# Test MetaTag 'Event'
-		self.assertEqual(cls.hasMetaTag("Event"),True,"MetaTag 'Event' not found.")
-		meta = cls.getMetaTag("Event")
-		self.assertEqual(meta.getName(),"Event","MetaTag name not equal to 'Event'.")
-		self.assertEqual(meta.getType(),"metatag","MetaTag type not equal to 'metatag'.")
-		self.assertEqual(len(meta.getParams()),2,"'Event' MetaTag should contain 2 parameters.")
-		self.assertEqual(meta.hasParam("name"),True,"'Event' MetaTag should have 'name' parameter.")
-		self.assertEqual(meta.getParam("name"),"\"buttonDown\"","'name' parameter should equal 'buttonDown'.")
-		self.assertEqual(meta.hasParam("type"),True,"'Event' MetaTag should have 'type' parameter.")
-		self.assertEqual(meta.getParam("type"),"\"mx.events.FlexEvent\"","'type' parameter should equal 'mx.events.FlexEvent'.")
+		self.assertEqual("test" in self.builder.packages,True,"Package 'test' not found.")
+		self.assertEqual("MyClass" in self.builder.packages["test"].classes,True,"Class 'MyClass' not found in package.")
+		self.assertEqual(self.builder.packages["test"].classes["MyClass"].metadata[0].name,"Event","Metatag 'Event' not found.")
+		self.assertEqual(self.builder.packages["test"].classes["MyClass"].metadata[0].params,{'type': 'mx.events.FlexEvent', 'name': 'buttonDown'})
 	def testClassMetaData(self):
 		self.builder.addSource("""
 		package test{
@@ -486,11 +471,11 @@ class BuilderTestCase(BaseTestCase):
 			}
 		}
 		""")
-		self.assertEqual(self.builder.hasPackage("com.googlecode.asdox"),True,"Package 'com.googlecode.asdox' not found.")
-		pkg = self.builder.getPackage("com.googlecode.asdox")
-		self.assertEqual(len(pkg.getClasses()),2,"Package doesn't contain 2 classes.")
-		self.assertEqual(pkg.hasClass("MyClass"),True,"'MyClass' not found in package.")
-		self.assertEqual(pkg.hasClass("MyOtherClass"),True,"'MyOtherClass' not found in package.")
+		self.assertEqual("com.googlecode.asdox" in self.builder.packages,True,"Package 'com.googlecode.asdox' not found.")
+		pkg = self.builder.packages["com.googlecode.asdox"]
+		self.assertEqual(len(pkg.classes),2,)
+		self.assertEqual("MyClass" in pkg.classes,True,"'MyClass' not found in package.")
+		self.assertEqual("MyOtherClass" in pkg.classes,True,"'MyOtherClass' not found in package.")
 	def testAddSourceDir(self):
 		"Parse directory for source files"
 		self.builder.addSource("resources/com/gurufaction")
