@@ -30,14 +30,12 @@ from asModel import *
 
 stack = []
 metatags = []
-variables = []
-methods = []
-metatags = []
-pkg = ASPackage()
+package = ASPackage()
+class_name = ""
 def parseASPackage( s,l,t ):
-    pkg.name = t.name
-    pkg.cls = ASClass(t.cls_name)
+    package.name = t.name
 def parseASClass( s,l,t):
+    global class_name
     cls = ASClass(t.name)
     cls.extends = t.extends
     if len(t.implements) > 0 :
@@ -46,11 +44,13 @@ def parseASClass( s,l,t):
     while metatags:
 	tag= metatags.pop()
 	cls.metadata.append(tag)
-    pkg.cls = cls
+    class_name = cls.name
+    package.classes[cls.name] = cls
 def parseASArg(s,l,t):
     arg = ASType(t.name,t.type)
     return arg
 def parseASMetaTag(s,l,t):
+    global metatags
     meta = ASMetaTag(t.name)
     index = 0
     for att in t.attributes:
@@ -63,6 +63,8 @@ def parseASMetaTag(s,l,t):
 def parseJavaDoc(s,l,t):
     pass
 def parseASMethod(s,l,t):
+    global class_name,package,metatags
+    
     meth = ASMethod(t.name,t.type)
     meth.visibility = t.visibility
     if t.override:
@@ -75,31 +77,32 @@ def parseASMethod(s,l,t):
 	for arg in args:
 	    meth.arguments[arg.name] =  arg
     if t.accessor:
-	if pkg.cls.properties.has_key(meth.name) == False:
-	    pkg.cls.properties[meth.name] = ASProperty(meth.name,meth.type)
+	if package.classes[class_name].properties.has_key(meth.name) == False:
+	    package.classes[class_name].properties[meth.name] = ASProperty(meth.name,meth.type)
 	
 	if t.accessor == "get":
-	    pkg.cls.properties[meth.name].readable = True
+	    package.classes[class_name].properties[meth.name].readable = True
 	if t.accessor == "set":
-	    pkg.cls.properties[meth.name].writable = True
+	    package.classes[class_name].properties[meth.name].writable = True
 	while metatags:
-	    tag= metatags.pop()
-	    pkg.cls.properties[meth.name].metadata.append(tag)
+	    tag = metatags.pop()
+	    package.classes[class_name].properties[meth.name].metadata.append(tag)
     else:
+	package.classes[class_name].methods[meth.name] = meth
 	while metatags:
-	    tag= metatags.pop()
-	    meth.metadata.append(tag)
-	pkg.cls.methods[meth.name] = meth
+	    tag = metatags.pop()
+	    package.classes[class_name].methods[meth.name].metadata.append(tag)
 def parseASVariable(s,l,t):
+    global metatags,class_name,package
     var = ASVariable(t.name,t.type)
     var.kind = t.kind
     var.visibility = t.visibility
     if t.static == "static":
 	var.isStatic = True
+    package.classes[class_name].variables[var.name] = var
     while metatags:
 	tag= metatags.pop()
-	var.metadata.append(tag)
-    pkg.cls.variables[var.name] = var
+	package.classes[class_name].variables[var.name].metadata.append(tag)
 def locate(pattern, root=os.getcwd()):
 		for path, dirs, files in os.walk(root):
 			for filename in [os.path.abspath(os.path.join(path, filename)) for filename in files if fnmatch.fnmatch(filename, pattern)]:
@@ -182,14 +185,3 @@ INTERFACE_DEFINITION = Optional(BASE_MODIFIERS) + INTERFACE + QUALIFIED_IDENTIFI
 PACKAGE_BLOCK = LCURL + ZeroOrMore( IMPORT_DEFINITION ^ BASE_BLOCK ) + (CLASS_DEFINITION ^ INTERFACE_DEFINITION) + RCURL
 PACKAGE_DEFINITION = (PACKAGE + Optional( QUALIFIED_IDENTIFIER("name") ) ).setParseAction(parseASPackage) + PACKAGE_BLOCK 
 PROGRAM = ZeroOrMore( COMMENTS ) + PACKAGE_DEFINITION 
-
-files = locate("ComboBox.as","C:\\flex_sdk_3\\frameworks\\projects\\framework\\src\\mx\\controls")
-for f in files:
-    #print f
-    try:
-	PROGRAM.parseFile(f)
-    except ParseException, err:
-	print f
-	print err
-	#break
-#print pkg.toString()
