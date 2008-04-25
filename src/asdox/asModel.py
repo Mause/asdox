@@ -175,28 +175,33 @@ class ASClass(Visible,MetaTagable):
 		self.isInterface = False
 class ASPackage(Visible,MetaTagable):
 	"Actionscript Package Definition"
-	cls = ASClass()
+	classes = dict()
 	imports = []
 	def __init__(self, name = ""):
 		self.name = name
 		self.metadata = []
-		self.cls = ASClass()
+		self.classes = dict()
 		self.imports = []
 	def toString(self):
 		print "Package: " + self.name
-		print self.cls.visibility + " class " + self.cls.name + " implements " + str(self.cls.implements)
-		for meta in self.cls.metadata:
-			print "\t\t[" + meta.name + "]"
-		for meth in self.cls.methods:
-			for meta in meth.metadata:
+		for cls in self.classes.values():
+			print cls.visibility + " class " + cls.name + " implements " + str(cls.implements)
+			for meta in cls.metadata:
 				print "\t\t[" + meta.name + "]"
-			print "\t\tMethod: " + meth.visibility + " " + meth.name + ":" + meth.type
-			for arg in meth.arguments.values():
-				print "\t\t\tArguments: " + arg.name + ":" + arg.type
-		for var in self.cls.variables:
-			for meta in var.metadata:
-				print "\t\t[" + meta.name + "]"
-			print "\t\tVariables: " + var.visibility + " " + var.name + ":" + var.type
+			for meth in cls.methods.values():
+				for meta in meth.metadata:
+					print "\t\t[" + meta.name + "]"
+				print "\t\tMethod: " + meth.visibility + " " + meth.name + ":" + meth.type
+				for arg in meth.arguments.values():
+					print "\t\t\tArguments: " + arg.name + ":" + arg.type
+			for var in cls.variables.values():
+				for meta in var.metadata:
+					print "\t\t[" + meta.name + "]"
+				print "\t\tVariables: " + var.visibility + " " + var.name + ":" + var.type
+			for prop in cls.properties.values():
+				for meta in prop.metadata:
+					print "\t\t[" + meta.name + "]"
+				print "\t\tProperty: " + prop.visibility + " " + prop.name + ":" + prop.type
 class ASNamespace(Typeable,Modifiable):
 	"Actionscript Namespace Definition"
 	def __init__(self, name = ""):
