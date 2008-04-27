@@ -56,7 +56,7 @@ class Builder:
 		asGrammar.PROGRAM.parseString(src)
 		pkg = asGrammar.package
 		asGrammar.package = asModel.ASPackage()
-		print pkg.classes
+		
 		if pkg.name in self.packages:
 			print pkg.classes
 			for cls in pkg.classes.values():
