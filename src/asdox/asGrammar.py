@@ -64,7 +64,6 @@ def parseJavaDoc(s,l,t):
     pass
 def parseASMethod(s,l,t):
     global class_name,package,metatags
-    
     meth = ASMethod(t.name,t.type)
     meth.visibility = t.visibility
     if t.override:
@@ -87,6 +86,13 @@ def parseASMethod(s,l,t):
 	while metatags:
 	    tag = metatags.pop()
 	    package.classes[class_name].properties[meth.name].metadata.append(tag)
+	package.classes[class_name].properties[meth.name].visibility = t.visibility
+	if t.override:
+	    package.classes[class_name].properties[meth.name].isOverride = True
+	if t.final:
+	    package.classes[class_name].properties[meth.name].isFinal = True
+	if t.static:
+	    package.classes[class_name].properties[meth.name].isStatic = True
     else:
 	package.classes[class_name].methods[meth.name] = meth
 	while metatags:
