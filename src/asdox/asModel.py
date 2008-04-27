@@ -83,7 +83,7 @@ class NamespaceModifiable:
 class Visible:
 	visibility = "internal"
 	def __init__(self):
-		pass
+		self.visibility = "internal"
 class Modifiable:
 	"Actionscript Object that can be modified"
 	__modifiers = set()
