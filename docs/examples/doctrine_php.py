@@ -60,7 +60,7 @@ package com.gurufaction.myApp
 }
 """)
 
-pkg = builder.getPackage("com.gurufaction.myApp")
+pkg = builder.packages["com.gurufaction.myApp"]
 
 template = """
 <?php
@@ -98,33 +98,40 @@ template = """
 );
 #end def
 
-class $cls.getName() extends Doctrine_Record
+class $cls.name extends Doctrine_Record
 {
 	public function setUp()
         {
-       	#for $getter in $cls.getGetters().values()
-		#if $getter.hasMetaTag("HasOne") 
-                $createMeth("hasOne",$getter.getMetaTag("HasOne").getParams())
+       	#for $property in $cls.properties.values()
+        	#for $meta in $property.metadata
+                #if $meta.name == "HasOne"
+                $createMeth("hasOne",$meta.params)
                 #end if
-                #if $getter.hasMetaTag("HasMany") 
-                $createMeth("hasMany",$getter.getMetaTag("HasMany").getParams())
+                #if $meta.name == "HasMany"
+                $createMeth("hasMany",$meta.params)
                 #end if
+                #end for
 	#end for
         }
         
 	public function setTableDefinition()
         {
-            #for $getter in $cls.getGetters().values()
-                #if $getter.hasMetaTag("Column")
-                	#set $tag = $getter.getMetaTag("Column")
-                        #if $tag.hasParam("name") == False
-$tag.addParam("'" + $getter.getName().lower() + "'","name")#slurp
-                        #end if
-                        #if $tag.hasParam("type") == False
-$tag.addParam("'" + $getter.getType().lower() + "'","type")#slurp
-                        #end if
-                $createMeth("hasColumn",$tag.getParams())#slurp
+            #for $property in $cls.properties.values()
+            	#for $meta in $property.metadata
+                #if $meta.name == "Column"
+                    #if "name" in $meta.params
+                    
+                    #else
+#set $meta.params["name"] = $property.name
+                    #end if
+                    #if "type" in $meta.params
+                    
+                    #else
+#set $meta.params["type"] = $property.type
+                    #end if
+                $createMeth("hasColumn",$meta.params)#slurp
                 #end if
+                #end for
             #end for
         }
 }
@@ -132,31 +139,31 @@ $tag.addParam("'" + $getter.getType().lower() + "'","type")#slurp
 """
 templateDAO = """
 <?php
-class ${cls.getName()}DAO
+class ${cls.name}DAO
 {
-	public function save($cls.getName() &$$cls.getName().lower() )
+	public function save($cls.name &$$cls.name.lower() )
         {
-        	$$cls.getName().lower()->save();
+        	$$cls.name.lower()->save();
         }
         
-        public function delete($cls.getName() &$$cls.getName().lower() )
+        public function delete($cls.name &$$cls.name.lower() )
         {
-        	$$cls.getName().lower()->delete();
+        	$$cls.name.lower()->delete();
         }
         
         public function get(#raw$id#end raw)
         {
-        	return #raw$conn#end raw->getTable('${cls.getName()}')->find(#raw$id#end raw);
+        	return #raw$conn#end raw->getTable('${cls.name}')->find(#raw$id#end raw);
         }
 }
 ?>
 """
-for cls in pkg.getClasses().values():
+for cls in pkg.classes.values():
     t = Template(template, searchList=[{'cls': cls}])
-    file = open( cls.getName() + '.php','w')
+    file = open( cls.name + '.php','w')
     file.write(str(t))
     file.close()
     t = Template(templateDAO, searchList=[{'cls': cls}])
-    file = open( cls.getName() + 'DAO.php','w')
+    file = open( cls.name + 'DAO.php','w')
     file.write(str(t))
     file.close()
