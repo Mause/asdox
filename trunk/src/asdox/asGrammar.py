@@ -30,10 +30,14 @@ from asModel import *
 
 stack = []
 metatags = []
+imports = []
 package = ASPackage()
 class_name = ""
 def parseASPackage( s,l,t ):
+    global imports,package
     package.name = t.name
+    while imports:
+	package.imports.append( imports.pop() )
 def parseASClass( s,l,t):
     global class_name
     cls = ASClass(t.name)
@@ -56,6 +60,9 @@ def parseASClass( s,l,t):
 def parseASArg(s,l,t):
     arg = ASType(t.name,t.type)
     return arg
+def parseImports(s,l,t):
+    global imports
+    imports.append(t.name)
 def parseASMetaTag(s,l,t):
     global metatags
     meta = ASMetaTag(t.name)
@@ -88,8 +95,11 @@ def parseASMethod(s,l,t):
 	
 	if t.accessor == "get":
 	    package.classes[class_name].properties[meth.name].readable = True
+	    package.classes[class_name].properties[meth.name].type = meth.type
 	if t.accessor == "set":
 	    package.classes[class_name].properties[meth.name].writable = True
+	    for arg in meth.arguments.values():
+		package.classes[class_name].properties[meth.name].type = arg.type
 	while metatags:
 	    tag = metatags.pop()
 	    package.classes[class_name].properties[meth.name].metadata.append(tag)
@@ -150,6 +160,7 @@ SET = Keyword("set")
 DOT = "."
 STAR = "*"
 REST = "..."
+UNDERSCORE = "_"
 TERMINATOR = Optional(SEMI)
 
 point = Literal('.')
@@ -179,7 +190,7 @@ USE_NAMESPACE = USE + NAMESPACE + QUALIFIED_IDENTIFIER + TERMINATOR
 ATTRIBUTES =  (Optional(IDENTIFIER("key") + EQUAL) + VALUE("value") ).setResultsName("attributes",listAllMatches="true")
 METATAG = (LSQUARE + IDENTIFIER("name") + Optional( LPARN + delimitedList(ATTRIBUTES) + RPARN ) + RSQUARE).setParseAction(parseASMetaTag)
 INCLUDE_DEFINITION = INCLUDE + QuotedString(quoteChar="\"", escChar='\\') + TERMINATOR
-IMPORT_DEFINITION = IMPORT + QUALIFIED_IDENTIFIER + Optional(DOT + STAR) + TERMINATOR
+IMPORT_DEFINITION = (IMPORT + QUALIFIED_IDENTIFIER("name") + Optional(DOT + STAR) + TERMINATOR).setParseAction(parseImports)
 BLOCK = Suppress( nestedExpr("{","}") )
 BASE_BLOCK = USE_NAMESPACE ^ COMMENTS ^ METATAG ^ INCLUDE_DEFINITION
 METHOD_MODIFIER = Optional(STATIC("static")) & ( Optional(OVERRIDE("override")) & Optional(FINAL("final")) & Optional(IDENTIFIER("visibility")) )
@@ -197,4 +208,4 @@ INTERFACE_BLOCK = LCURL + ZeroOrMore( IMPORT_DEFINITION ^ BASE_BLOCK ^ VARIABLE_
 INTERFACE_DEFINITION = Optional(BASE_MODIFIERS) + INTERFACE + QUALIFIED_IDENTIFIER + Optional( INTERFACE_EXTENDS ) + INTERFACE_BLOCK
 PACKAGE_BLOCK = LCURL + ZeroOrMore( IMPORT_DEFINITION ^ BASE_BLOCK ) + (CLASS_DEFINITION ^ INTERFACE_DEFINITION) + RCURL
 PACKAGE_DEFINITION = (PACKAGE + Optional( QUALIFIED_IDENTIFIER("name") ) ).setParseAction(parseASPackage) + PACKAGE_BLOCK 
-PROGRAM = ZeroOrMore( COMMENTS ) + PACKAGE_DEFINITION 
+PROGRAM = ZeroOrMore( COMMENTS ) + PACKAGE_DEFINITION
