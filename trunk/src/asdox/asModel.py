@@ -24,98 +24,13 @@
 # LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-class Includable:
-	"Actionscript Object that allows for declaring includes"
-	__includes = set()
-	def __init__(self):
-		self.__includes = set()
-	def addInclude(self,name):
-		self.__includes.add(name)
-	def removeInclude(self,name):
-		self.__includes.discard(name)
-	def getIncludes(self):
-		return self.__includes
-	def hasInclude(self,name):
-		return name in self.__includes
-class Implementable:
-	"Actionscript Object that allows for declaring implementation"
-	__implements = set()
-	def __init__(self):
-		self.__implements = set()
-	def addImplement(self,name):
-		self.__implements.add(name)
-	def removeImplement(self,name):
-		self.__implements.discard(name)
-	def getImplements(self):
-		return self.__implements
-	def hasImplement(self,name):
-		return name in self.__implements
 class Documentable:
 	"Actionscript Object that allows for JavaDoc declaration"
 	pass
-class Namespacable:
-	"Actionscript Object that allows for declaring and using namespaces"
-	__namespaces = dict()
-	__used_namespaces = set()
-	def __init__(self):
-		self.__namespaces = dict()
-		self.__used_namespaces = set()
-	def addNamespace(self,namespace):
-		self.__namespaces[namespace.getName()] = namespace
-	def removeNamespace(self,name):
-		del self.__namespaces[name]
-	def getNamespace(self,name):
-		return self.__namespaces.get(name,None)
-	def getNamespaces(self):
-		return self.__namespaces
-	def useNamespace(self,name):
-		self.__used_namespaces.add(name)
-	def unUseNamespace(self,name):
-		self.__used_namespaces.discard(name)
-class NamespaceModifiable:
-	__namespace = None
-	def __init__(self):
-		self.__namespace = None
-	def getNamespace(self):
-		return self.__namespace
-	def setNamespace(self,namespace):
-		self.__namespace = namespace
 class Visible:
 	visibility = "internal"
 	def __init__(self):
 		self.visibility = "internal"
-class Modifiable:
-	"Actionscript Object that can be modified"
-	__modifiers = set()
-	__ACCESS_MODIFIERS = set()
-	__TYPE_MODIFIERS =  set()
-	def __init__(self):
-		self.__modifiers = set()
-		self.__ACCESS_MODIFIERS = set()
-		self.__TYPE_MODIFIERS =  set()
-	def removeModifier(self,name):
-		self.__modifiers.discard(name)
-	def addModifier(self, name):
-		self.__modifiers = self.__modifiers.union( self.__ACCESS_MODIFIERS.union(self.__TYPE_MODIFIERS).intersection(set([name])) )
-		if name in self.__ACCESS_MODIFIERS:
-			self.__modifiers.difference_update( self.__ACCESS_MODIFIERS.difference(set([name])))
-	def hasModifier(self,name):
-		return name in self.__modifiers
-	def getModifiers(self):
-		return self.__modifiers
-class Typeable:
-	"Actionscript Type Definition"
-	__name = ""
-	__type = ""
-	def __init__(self,name,type):
-		self.__name = name
-		self.__type = type
-	def getName(self):
-		return self.__name
-	def setName(self,name):
-		self.__name = name
-	def getType(self):
-		return self.__type
 class MetaTagable:
 	"Actionscript Object that allows for MetaTags"
 	metadata = []
@@ -201,14 +116,7 @@ class ASPackage(Visible,MetaTagable):
 			for prop in cls.properties.values():
 				for meta in prop.metadata:
 					print "\t\t[" + meta.name + "]"
-				print "\t\tProperty: " + prop.visibility + " " + prop.name + ":" + prop.type
-class ASNamespace(Typeable,Modifiable):
-	"Actionscript Namespace Definition"
-	def __init__(self, name = ""):
-		self._Typeable__name = name;
-		self._Typeable__type = "namespace"
-		self._Modifiable__modifiers = set()
-		self._Modifiable__ACCESS_MODIFIERS = set(['public','internal','private','protected'])	
+				print "\t\tProperty: " + prop.visibility + " " + prop.name + ":" + prop.type	
 class ASMethod(ASType,Visible,MetaTagable):
 	"Actionscript Method Definition"
 	arguments = dict()
