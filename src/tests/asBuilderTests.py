@@ -45,17 +45,8 @@ class ASClassTestCase(BaseTestCase):
 		}
 		""")
 		
-		self.assertEqual("com.gurufaction.mypackage" in self.builder.packages,True,"Package 'com.gurufaction.mypackage' not found.")
-		pkg = self.builder.packages["com.gurufaction.mypackage"]
-		self.assertEqual("MyBasicClass" in pkg.classes,True,"Class 'MyBasicClass' not found.")
-		cls = pkg.classes["MyBasicClass"]
-		self.assertEqual(cls.name,"MyBasicClass","Class name not equal to 'MyBasicClass'.")
-		self.assertEqual(cls.isInterface,False,"Class type not equal to 'class'.")
-		self.assertEqual(cls.visibility,"public","Class is not public")
-		self.assertEqual(cls.isDynamic,False,"Class should not be dynamic.")
-		self.assertEqual(cls.isFinal,False,"Class should not be final.")
-		self.assertEqual(len(cls.variables),0,"Class should contain no fields.")
-		self.assertEqual(len(cls.methods),0,"Class should contain no methods.")
+		self.assertEqual(self.builder.packages["com.gurufaction.mypackage"].classes["MyBasicClass"].name,"MyBasicClass")
+		self.assertEqual(self.builder.packages["com.gurufaction.mypackage"].classes["MyBasicClass"].visibility,"public")
 	def testClassMetadataJavaDocComment(self):
 		self.builder.addSource("""
 		package test
@@ -74,9 +65,9 @@ class ASClassTestCase(BaseTestCase):
 			}
 		}
 		""")
-		self.assertEqual("test" in self.builder.packages,True,"Package 'test' not found.")
-		self.assertEqual("MyClass" in self.builder.packages["test"].classes,True,"Class 'MyClass' not found in package.")
-		self.assertEqual(self.builder.packages["test"].classes["MyClass"].metadata[0].name,"Event","Metatag 'Event' not found.")
+		self.assertEqual(self.builder.packages["test"].classes["MyClass"].name,"MyClass")
+		self.assertEqual(self.builder.packages["test"].classes["MyClass"].visibility,"public")
+		self.assertEqual(self.builder.packages["test"].classes["MyClass"].metadata[0].name,"Event")
 		self.assertEqual(self.builder.packages["test"].classes["MyClass"].metadata[0].params,{'type': 'mx.events.FlexEvent', 'name': 'buttonDown'})
 	def testClassMetaData(self):
 		self.builder.addSource("""
@@ -90,13 +81,14 @@ class ASClassTestCase(BaseTestCase):
 		}
 		""")
 		# Test Package 'test'
-		self.assertEqual("test" in self.builder.packages, True, "Package Not Found!")
-		self.assertEqual("MyClass" in self.builder.packages["test"].classes,True,"Class Not Found in Package.")
-		for meta in self.builder.packages["test"].classes.values():
-			if meta.name == "Bindable":
-				self.assertEqual(meta.params,{'n':'n'})
-			if meta.name == "Event":
-				self.assertEqual(meta.params,{'name':'myEnabledEvent'})
+		self.assertEqual(self.builder.packages["test"].classes["MyClass"].name,"MyClass")
+		self.assertEqual(self.builder.packages["test"].classes["MyClass"].visibility,"public")
+		self.assertEqual(self.builder.packages["test"].classes["MyClass"].metadata[0].name,"DefaultTriggerEvent")
+		self.assertEqual(self.builder.packages["test"].classes["MyClass"].metadata[0].params,{0: 'click'})
+		self.assertEqual(self.builder.packages["test"].classes["MyClass"].metadata[1].name,"Event")
+		self.assertEqual(self.builder.packages["test"].classes["MyClass"].metadata[1].params,{'name': 'myEnableEvent','type':'flash.events.Event'})
+		self.assertEqual(self.builder.packages["test"].classes["MyClass"].metadata[2].name,"Bindable")
+		self.assertEqual(self.builder.packages["test"].classes["MyClass"].metadata[2].params,{})
 	def testClassInclude(self):
 		"Parse Class with Include statement"
 		self.builder.addSource("""
@@ -108,10 +100,8 @@ class ASClassTestCase(BaseTestCase):
 			}
 		}
 		""")
-		self.assertEqual(self.builder.hasPackage("com.gurufaction.mypackage"),True,"Package 'com.gurufaction.mypackage' not found.")
-		pkg = self.builder.getPackage("com.gurufaction.mypackage")
-		self.assertEqual(pkg.hasClass("MyClass"),True,"Class 'MyClass' not found in package.")
-		cls = pkg.getClass("MyClass")		
+		self.assertEqual(self.builder.packages["com.gurufaction.mypackage"].classes["MyClass"].name,"MyClass")
+		self.assertEqual(self.builder.packages["com.gurufaction.mypackage"].classes["MyClass"].visibility,"public")
 	def testClassExtends(self):
 		"Parse Class with Extends"
 		self.builder.addSource("""
@@ -123,7 +113,9 @@ class ASClassTestCase(BaseTestCase):
 			}
 		}
 		""")
+		self.assertEqual(self.builder.packages["com.gurufaction.mypackage"].classes["MyClass"].name,"MyClass")
 		self.assertEqual(self.builder.packages["com.gurufaction.mypackage"].classes["MyClass"].extends,"BaseClass")
+		self.assertEqual(self.builder.packages["com.gurufaction.mypackage"].classes["MyClass"].visibility,"public")
 	def testClassImplements(self):
 		"Parse Class which implements interfaces"
 		self.builder.addSource("""
@@ -365,11 +357,12 @@ class ParsingExternalFileTestCase(BaseTestCase):
 	def testFilterClassFile(self):
 		"Load and Parse Filter.as source file."
 		self.builder.addSource("resources/Filter.as")
-		self.assertEqual( self.builder.hasPackage("com.franklinconnections"),True,"'com.franklinconnections' package not found!")
+		self.assertEqual(self.builder.packages["com.franklinconnections"].imports,"Filter")
+		self.assertEqual(self.builder.packages["com.franklinconnections"].classes["Filter"].name,"Filter")
 	def testButtonClassFile(self):
 		"Load and Parse Button.as source file."
 		self.builder.addSource("resources/Button.as")
-		self.assertEqual( self.builder.hasPackage("mx.controls"),True,"'mx.controls' package not found!")
+		self.assertEqual(self.builder.packages["mx.controls"].classes["Button"].name,"Button")
 class BuilderTestCase(BaseTestCase):		
 	def testMultipleSources(self):
 		"Parse multiple source files."
@@ -385,34 +378,23 @@ class BuilderTestCase(BaseTestCase):
 		self.builder.addSource(""" 
 		package com.googlecode.asdox
 		{
-			class MyOtherClass
+			public class MyOtherClass
 			{
 				
 			}
 		}
 		""")
-		self.assertEqual("com.googlecode.asdox" in self.builder.packages,True,"Package 'com.googlecode.asdox' not found.")
-		pkg = self.builder.packages["com.googlecode.asdox"]
-		self.assertEqual(len(pkg.classes),2,)
-		self.assertEqual("MyClass" in pkg.classes,True,"'MyClass' not found in package.")
-		self.assertEqual("MyOtherClass" in pkg.classes,True,"'MyOtherClass' not found in package.")
+		self.assertEqual(self.builder.packages["com.gurufaction.mypackage"].classes["MyClass"].name,"MyClass")
+		self.assertEqual(self.builder.packages["com.gurufaction.mypackage"].classes["MyClass"].visibility,"internal")
+		self.assertEqual(self.builder.packages["com.gurufaction.mypackage"].classes["MyOtherClass"].name,"MyOtherClass")
+		self.assertEqual(self.builder.packages["com.gurufaction.mypackage"].classes["MyOtherClass"].visibility,"public")
 	def testAddSourceDir(self):
 		"Parse directory for source files"
 		self.builder.addSource("resources/com/gurufaction")
-		#test if package exist
-		self.assertEqual(self.builder.hasPackage("com.gurufaction"),True,"Package not found in source directory")
-		#get current package
-		pkg = self.builder.getPackage("com.gurufaction")
-		#test if two classes exist in package
-		self.assertEqual(len(pkg.getClasses()),2,"Did not find expected number of classes in source directory")
-		#get first class
-		cls1 = pkg.getClass("MyClassFile1")
-		#get second class
-		cls2 = pkg.getClass("MyClassFile2")
-		#get first class
-		self.assertEqual(cls1.getName(),"MyClassFile1","First class not found 'MyClassFile1'")
-		#get second class
-		self.assertEqual(cls2.getName(),"MyClassFile2","Second class not found 'MyClassFile2'")
+		self.assertEqual(self.builder.packages["com.gurufaction"].classes["MyClassFile1"].name,"MyClassFile1")
+		self.assertEqual(self.builder.packages["com.gurufaction"].classes["MyClassFile1"].visibility,"internal")
+		self.assertEqual(self.builder.packages["com.gurufaction"].classes["MyClassFile2"].name,"MyClassFile2")
+		self.assertEqual(self.builder.packages["com.gurufaction"].classes["MyClassFile2"].visibility,"internal")
 class ASFieldTestCase(BaseTestCase):
 	def testClassField(self):
 		"Parse class field."
@@ -425,22 +407,11 @@ class ASFieldTestCase(BaseTestCase):
 			}
 		}
 		""")
-		#test for valid package
-		self.assertEqual(self.builder.hasPackage(""),True,"Unnamed package not found in testClassField")
-		#get unnamed package
-		pkg = self.builder.getPackage("")
-		#test that a class has been declared
-		self.assertEqual(pkg.hasClass("MyClass"),True,"Package does not have a class defined")
-		# get class 'MyClass'
-		cls = pkg.getClass("MyClass")
-		#test for field in in class called 'today'
-		self.assertEqual(cls.hasField("today"),True,"'today' field not found")
-		#test for internal modifier in 'today' field
-		self.assertEqual(cls.getField("today").hasModifier("internal"),True,"No Internal modifier found in field")
-		self.assertEqual(pkg.getClass("MyClass").getField("today").getName(),"today","Field name not equal to 'today'.")
-		#test that 'today' field is of type DateTime
-		self.assertEqual(pkg.getClass("MyClass").getField("today").getType(),"DateTime","field was not of type 'DateTime'.")
-		
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].name,"MyClass")
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].visibility,"internal")
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].variables["today"].name,"today")
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].variables["today"].type,"DateTime")
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].variables["today"].visibility,"internal")
 	def testConstantClassField(self):
 		"Parse class constant field."
 		self.builder.addSource(""" 
@@ -452,20 +423,12 @@ class ASFieldTestCase(BaseTestCase):
 			}
 		}
 		""")
-		#test for valid package
-		self.assertEqual(self.builder.hasPackage(""),True,"Unnamed package not found in testConstantClassField")
-		#get unnamed package
-		pkg = self.builder.getPackage("")
-		#test that a class has been declared
-		self.assertEqual(pkg.hasClass("MyClass"),True,"Package does not have a class defined")
-		# get class 'MyClass'
-		cls = pkg.getClass("MyClass")
-		#test for field in in class called 'PI'
-		self.assertEqual(cls.hasField("PI"),True,"'PI' field not found")
-		#test if 'PI' field is constant
-		self.assertEqual(cls.getField("PI").isConstant(),True,"'PI' field not constant.")
-		#test that 'PI' field is of type Number
-		self.assertEqual(pkg.getClass("MyClass").getField("PI").getType(),"Number","field was not of type 'Number'.")
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].name,"MyClass")
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].visibility,"internal")
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].variables["PI"].name,"PI")
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].variables["PI"].type,"Number")
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].variables["PI"].visibility,"internal")
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].variables["PI"].isConstant,True)
 	def testFieldModifiers(self):
 		"Parse field modifiers"
 		self.builder.addSource(""" 
@@ -629,20 +592,14 @@ class ASMethodTestCase(BaseTestCase):
 		}
 		""")
 		
-		self.assertEqual(self.builder.hasPackage("com.gurufaction.asdox"),True,"Package 'com.gurufaction.asdox' not found.")
-		pkg = self.builder.getPackage("com.gurufaction.asdox")
-		self.assertEqual(pkg.getClass("MyClass").hasMethod("sayHi"),True,"'sayHi' method not found in 'MyClass'.")
-		meth = pkg.getClass("MyClass").getMethod("sayHi")
-		self.assertEqual(meth.getName(),"sayHi","'sayHi' method does not have same name.")
-		self.assertEqual(meth.getType(),"String","'sayHi' method does not return type 'String'.")
-		self.assertEqual(meth.hasModifier("public"),True,"'sayHi' method is not public.")
-		self.assertEqual(len(meth.getArguments()),0,"'sayHi' method does not contain zero arguments.")
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].methods["sayHi"].name,"sayHi")
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].methods["sayHi"].visibility,"public")
 	def testMethodOverriding(self):
 		"Parse overridden class method"
 		self.builder.addSource("""
 		package com.gurufaction.asdox
 		{
-			class Extender extends Base
+			class MyClass
 			{
 				public override function thanks():String 
 				{
@@ -652,11 +609,10 @@ class ASMethodTestCase(BaseTestCase):
 		}
 		""")
 		
-		self.assertEqual(self.builder.hasPackage("com.gurufaction.asdox"),True,"Package 'com.gurufaction.asdox' not found.")
-		pkg = self.builder.getPackage("com.gurufaction.asdox")
-		self.assertEqual(pkg.getClass("Extender").hasMethod("thanks"),True,"'thanks' method not found in 'Extender'.")
-		meth = pkg.getClass("Extender").getMethod("thanks")
-		self.assertEqual(meth.hasModifier("override"),True)
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].methods["thanks"].name,"thanks")
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].methods["thanks"].type,"String")
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].methods["thanks"].visibility,"public")
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].methods["thanks"].isOverride,True)
 	def testMethodArguments(self):
 		"Parse class method with multiple arguments."
 		self.builder.addSource("""
@@ -672,17 +628,14 @@ class ASMethodTestCase(BaseTestCase):
 		}
 		""")
 		
-		self.assertEqual(self.builder.hasPackage("com.gurufaction.asdox"),True,"Package 'com.gurufaction.asdox' not found.")
-		pkg = self.builder.getPackage("com.gurufaction.asdox")
-		self.assertEqual(pkg.getClass("MyClass").hasMethod("addIntegers"),True,"'addIntegers' method not found in 'MyClass'.")
-		meth = pkg.getClass("MyClass").getMethod("addIntegers")
-		self.assertEqual(len(meth.getArguments()),2,"'addIntegers' method does not contain two arguments.")
-		arg1 = meth.getArgument("num1")
-		arg2 = meth.getArgument("num2")
-		self.assertEqual(arg1.getName(),"num1")
-		self.assertEqual(arg1.getType(),"int")
-		self.assertEqual(arg2.getName(),"num2")
-		self.assertEqual(arg2.getType(),"int")
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].methods["addIntegers"].name,"addIntegers")
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].methods["addIntegers"].type,"int")
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].methods["addIntegers"].visibility,"public")
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].methods["addIntegers"].isOverride,False)
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].methods["addIntegers"].arguments["num1"].name,"num1")
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].methods["addIntegers"].arguments["num1"].type,"int")
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].methods["addIntegers"].arguments["num2"].name,"num2")
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].methods["addIntegers"].arguments["num2"].type,"int")
 	def testMethodMultiLineComment(self):
 		"Parse class method with multi-line comment."
 		self.builder.addSource("""
@@ -701,9 +654,10 @@ class ASMethodTestCase(BaseTestCase):
 		}
 		""")
 		
-		self.assertEqual(self.builder.hasPackage("com.gurufaction.asdox"),True,"Package 'com.gurufaction.asdox' not found.")
-		pkg = self.builder.getPackage("com.gurufaction.asdox")
-		self.assertEqual(pkg.getClass("MyClass").hasMethod("getName"),True,"'getName' method not found in 'MyClass'.")
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].methods["getName"].name,"getName")
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].methods["getName"].type,"String")
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].methods["getName"].visibility,"public")
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].methods["getName"].isOverride,False)
 	def testMethodSingleLineComment(self):
 		"Parse class method with single-line comment."
 		self.builder.addSource("""
@@ -720,9 +674,10 @@ class ASMethodTestCase(BaseTestCase):
 		}
 		""")
 		
-		self.assertEqual(self.builder.hasPackage("com.gurufaction.asdox"),True,"Package 'com.gurufaction.asdox' not found.")
-		pkg = self.builder.getPackage("com.gurufaction.asdox")
-		self.assertEqual(pkg.getClass("MyClass").hasMethod("getName"),True,"'getName' method not found in 'MyClass'.")
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].methods["getName"].name,"getName")
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].methods["getName"].type,"String")
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].methods["getName"].visibility,"public")
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].methods["getName"].isOverride,False)
 	def testMethodMetadata(self):
 		"Parse class method with metadata comment."
 		self.builder.addSource("""
@@ -740,9 +695,14 @@ class ASMethodTestCase(BaseTestCase):
 		}
 		""")
 		
-		self.assertEqual(self.builder.hasPackage("com.gurufaction.asdox"),True,"Package 'com.gurufaction.asdox' not found.")
-		pkg = self.builder.getPackage("com.gurufaction.asdox")
-		self.assertEqual(pkg.getClass("MyClass").hasMethod("getName"),True,"'getName' method not found in 'MyClass'.")
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].methods["getName"].name,"getName")
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].methods["getName"].type,"String")
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].methods["getName"].visibility,"public")
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].methods["getName"].isOverride,False)
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].methods["getName"].metadata[0].name,"Inspectable")
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].methods["getName"].metadata[0].params,{'environment': 'none'})
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].methods["getName"].metadata[1].name,"Bindable")
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].methods["getName"].metadata[1].params,{0: 'dataChange'})
 	def testMethodGetter(self):
 		"Parse class method with getter."
 		self.builder.addSource("""
@@ -758,11 +718,11 @@ class ASMethodTestCase(BaseTestCase):
 		}
 		""")
 		
-		self.assertEqual(self.builder.hasPackage("com.gurufaction.asdox"),True,"Package 'com.gurufaction.asdox' not found.")
-		pkg = self.builder.getPackage("com.gurufaction.asdox")
-		self.assertEqual(pkg.getClass("MyClass").hasGetter("labelPlacement"),True,"'labelPlacement' method not found in 'MyClass'.")
-		meth = pkg.getClass("MyClass").getGetter("labelPlacement")
-		self.assertEqual(meth.getAccessor(),"get")
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].properties["labelPlacement"].name,"labelPlacement")
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].properties["labelPlacement"].type,"String")
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].properties["labelPlacement"].visibility,"public")
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].properties["labelPlacement"].readable,True)
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].properties["labelPlacement"].writable,False)
 	def testMethodSetter(self):
 		"Parse class method with setter."
 		self.builder.addSource("""
@@ -778,11 +738,11 @@ class ASMethodTestCase(BaseTestCase):
 		}
 		""")
 		
-		self.assertEqual(self.builder.hasPackage("com.gurufaction.asdox"),True,"Package 'com.gurufaction.asdox' not found.")
-		pkg = self.builder.getPackage("com.gurufaction.asdox")
-		self.assertEqual(pkg.getClass("MyClass").hasSetter("labelPlacement"),True,"'labelPlacement' method not found in 'MyClass'.")
-		meth = pkg.getClass("MyClass").getSetter("labelPlacement")
-		self.assertEqual(meth.getAccessor(),"set")
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].properties["labelPlacement"].name,"labelPlacement")
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].properties["labelPlacement"].type,"String")
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].properties["labelPlacement"].visibility,"public")
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].properties["labelPlacement"].readable,False)
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].properties["labelPlacement"].writable,True)
 	def testMethodGetterAndSetter(self):
 		"Parse class method with setter and getter."
 		self.builder.addSource("""
@@ -803,10 +763,11 @@ class ASMethodTestCase(BaseTestCase):
 		}
 		""")
 		
-		self.assertEqual(self.builder.hasPackage("com.gurufaction.asdox"),True,"Package 'com.gurufaction.asdox' not found.")
-		pkg = self.builder.getPackage("com.gurufaction.asdox")
-		self.assertEqual(pkg.getClass("MyClass").hasGetter("name"),True,"Getter 'name' method not found in 'MyClass'.")
-		self.assertEqual(pkg.getClass("MyClass").hasSetter("name"),True,"Setter 'name' method not found in 'MyClass'.")
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].properties["name"].name,"name")
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].properties["name"].type,"String")
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].properties["name"].visibility,"public")
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].properties["name"].readable,True)
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].properties["name"].writable,True)
 	def testMethodNamespace(self):
 		"Parse class method with namespace."
 		self.builder.addSource("""
@@ -832,8 +793,11 @@ class ASMethodTestCase(BaseTestCase):
 		}
 		""")
 		
-		self.assertEqual(self.builder.hasPackage("com.gurufaction.asdox"),True,"Package 'com.gurufaction.asdox' not found.")
-		pkg = self.builder.getPackage("com.gurufaction.asdox")
-		self.assertEqual(pkg.getClass("MyClass").hasMethod("setSelected"),True,"'setSelected' method not found in 'MyClass'.")		
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].methods["setSelected"].name,"setSelected")
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].methods["setSelected"].type,"void")
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].methods["setSelected"].visibility,"mx_internal")
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].methods["setSelected"].isOverride,False)
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].methods["setSelected"].arguments["value"].name,"value")
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].methods["setSelected"].arguments["value"].type,"Boolean")
 if __name__ == "__main__":
 	unittest.main()
