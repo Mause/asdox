@@ -40,7 +40,14 @@ def parseASClass( s,l,t):
     cls.extends = t.extends
     if len(t.implements) > 0 :
 	cls.implements = t.implements[0]
-    cls.visibility = t.visibility
+    if t.visibility == "":
+	cls.visibility = "internal"
+    else:
+	cls.visibility = t.visibility
+    if t.dynamic == "dynamic":
+	cls.isDynamic = True
+    if t.final == "final":
+	cls.isFinal = True
     while metatags:
 	tag= metatags.pop()
 	cls.metadata.append(tag)
