@@ -20,7 +20,7 @@ package com.franklinconnections
 		public var name:String;
 		public var children:ArrayCollection;
 		
-		function Filter(_name:String)
+		public function Filter(_name:String)
 		{
 			name = _name;
 			children = new ArrayCollection();

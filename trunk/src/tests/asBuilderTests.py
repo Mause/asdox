@@ -238,7 +238,7 @@ class ASPackageTestCase(BaseTestCase):
 		}
 		""")
 		
-		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].imports,['flash.display.DisplayObject'])
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].imports,['flash.display.DisplayObject', 'flash.events', 'flash.events.FocusEvent', 'flash.events.KeyboardEvent', 'flash.events.MouseEvent', 'flash.events.TimerEvent'] )
 	def testPackageSinglelineComments(self):
 		self.builder.addSource("""
 		package com.gurufaction.asdox
@@ -357,7 +357,7 @@ class ParsingExternalFileTestCase(BaseTestCase):
 	def testFilterClassFile(self):
 		"Load and Parse Filter.as source file."
 		self.builder.addSource("resources/Filter.as")
-		self.assertEqual(self.builder.packages["com.franklinconnections"].imports,"Filter")
+		self.assertEqual(self.builder.packages["com.franklinconnections"].imports,['mx.collections.ArrayCollection', 'mx.controls.Alert'])
 		self.assertEqual(self.builder.packages["com.franklinconnections"].classes["Filter"].name,"Filter")
 	def testButtonClassFile(self):
 		"Load and Parse Button.as source file."
@@ -384,10 +384,10 @@ class BuilderTestCase(BaseTestCase):
 			}
 		}
 		""")
-		self.assertEqual(self.builder.packages["com.gurufaction.mypackage"].classes["MyClass"].name,"MyClass")
-		self.assertEqual(self.builder.packages["com.gurufaction.mypackage"].classes["MyClass"].visibility,"internal")
-		self.assertEqual(self.builder.packages["com.gurufaction.mypackage"].classes["MyOtherClass"].name,"MyOtherClass")
-		self.assertEqual(self.builder.packages["com.gurufaction.mypackage"].classes["MyOtherClass"].visibility,"public")
+		self.assertEqual(self.builder.packages["com.googlecode.asdox"].classes["MyClass"].name,"MyClass")
+		self.assertEqual(self.builder.packages["com.googlecode.asdox"].classes["MyClass"].visibility,"internal")
+		self.assertEqual(self.builder.packages["com.googlecode.asdox"].classes["MyOtherClass"].name,"MyOtherClass")
+		self.assertEqual(self.builder.packages["com.googlecode.asdox"].classes["MyOtherClass"].visibility,"public")
 	def testAddSourceDir(self):
 		"Parse directory for source files"
 		self.builder.addSource("resources/com/gurufaction")
@@ -403,7 +403,7 @@ class ASFieldTestCase(BaseTestCase):
 		{
 			class MyClass
 			{
-				var today:DateTime;
+				internal var today:DateTime;
 			}
 		}
 		""")
@@ -419,7 +419,7 @@ class ASFieldTestCase(BaseTestCase):
 		{
 			class MyClass
 			{
-				const PI:Number;
+				internal const PI:Number;
 			}
 		}
 		""")
@@ -436,7 +436,7 @@ class ASFieldTestCase(BaseTestCase):
 		{
 			class MyClass
 			{
-				static var count:int;
+				internal static var count:int;
 			}
 		}
 		""")
@@ -479,11 +479,11 @@ class ASFieldTestCase(BaseTestCase):
 		{
 		        class MyClass
 			{
-				var name:String = "Michael Ramriez";
-				var age:int = 29;
-				var salary:Number = 41000.52;
-				var isSmart:Boolean = True;
-				var _labelPlacement:String = ButtonLabelPlacement.RIGHT; 
+				internal var name:String = "Michael Ramriez";
+				internal var age:int = 29;
+				internal var salary:Number = 41000.52;
+				internal var isSmart:Boolean = True;
+				internal var _labelPlacement:String = ButtonLabelPlacement.RIGHT; 
 			}
 		}
 		""")
@@ -562,14 +562,10 @@ class ASMethodTestCase(BaseTestCase):
 		}
 		""")
 		
-		self.assertEqual(self.builder.hasPackage("com.gurufaction.asdox"),True,"Package 'com.gurufaction.asdox' not found.")
-		pkg = self.builder.getPackage("com.gurufaction.asdox")
-		self.assertEqual(pkg.getClass("MyClass").hasMethod("MyClass"),True,"'MyClass' method not found in 'MyClass'.")
-		meth = pkg.getClass("MyClass").getMethod("MyClass")
-		self.assertEqual(meth.getName(),"MyClass","'MyClass' method does not have same name.")
-		self.assertEqual(meth.getType(),"void","'MyClass' method does not return type 'void'.")
-		self.assertEqual(meth.hasModifier("public"),True,"'MyClass' method is not public.")
-		self.assertEqual(len(meth.getArguments()),0,"'MyClass' method does not contain zero arguments.")
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].name,"MyClass")
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].visibility,"public")
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].methods["MyClass"].name,"MyClass")
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].methods["MyClass"].visibility,"public")
 	def testMethod(self):
 		"Parse class method with no arguments."
 		self.builder.addSource("""
