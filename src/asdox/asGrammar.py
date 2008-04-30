@@ -36,8 +36,6 @@ class_name = ""
 def parseASPackage( s,l,t ):
     global imports,package
     package.name = t.name
-    while imports:
-	package.imports.append( imports.pop() )
 def parseASClass( s,l,t):
     global class_name
     cls = ASClass(t.name)
@@ -62,7 +60,7 @@ def parseASArg(s,l,t):
     return arg
 def parseImports(s,l,t):
     global imports
-    imports.append(t.name)
+    package.imports.append(t.name)
 def parseASMetaTag(s,l,t):
     global metatags
     meta = ASMetaTag(t.name)
