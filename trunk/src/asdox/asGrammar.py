@@ -118,8 +118,12 @@ def parseASMethod(s,l,t):
 def parseASVariable(s,l,t):
     global metatags,class_name,package
     var = ASVariable(t.name,t.type)
-    var.kind = t.kind
-    var.visibility = t.visibility
+    if t.kind == "const":
+	var.isConstant = True
+    if t.visibility == "":
+	var.visibility = "internal"
+    else:
+	var.visibility = t.visibility
     if t.static == "static":
 	var.isStatic = True
     package.classes[class_name].variables[var.name] = var
@@ -185,7 +189,7 @@ VALUE = floatnumber ^ QUALIFIED_IDENTIFIER ^ DBL_QUOTED_STRING ^ SINGLE_QUOTED_S
 INIT = QuotedString(quoteChar="=", endQuoteChar=";",multiline="true") ^ (EQUAL + DBL_QUOTED_STRING + TERMINATOR)
 TYPE = COLON + (QUALIFIED_IDENTIFIER ^ STAR)("type")
 VARIABLE_MODIFIERS = Optional(STATIC("static")) & Optional(IDENTIFIER("visibility"))
-VARIABLE_DEFINITION = ( VARIABLE_MODIFIERS + Optional(CONST ^ VAR)("kind") + IDENTIFIER("name")  + Optional(TYPE) + Optional(MULTI_LINE_COMMENT) + (INIT ^ TERMINATOR)).setParseAction(parseASVariable)
+VARIABLE_DEFINITION = ( VARIABLE_MODIFIERS + (CONST ^ VAR)("kind") + IDENTIFIER("name")  + Optional(TYPE) + Optional(MULTI_LINE_COMMENT) + (INIT ^ TERMINATOR)).setParseAction(parseASVariable)
 USE_NAMESPACE = USE + NAMESPACE + QUALIFIED_IDENTIFIER + TERMINATOR
 ATTRIBUTES =  (Optional(IDENTIFIER("key") + EQUAL) + VALUE("value") ).setResultsName("attributes",listAllMatches="true")
 METATAG = (LSQUARE + IDENTIFIER("name") + Optional( LPARN + delimitedList(ATTRIBUTES) + RPARN ) + RSQUARE).setParseAction(parseASMetaTag)

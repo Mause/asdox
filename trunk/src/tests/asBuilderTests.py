@@ -429,6 +429,22 @@ class ASFieldTestCase(BaseTestCase):
 		self.assertEqual(self.builder.packages[""].classes["MyClass"].variables["PI"].type,"Number")
 		self.assertEqual(self.builder.packages[""].classes["MyClass"].variables["PI"].visibility,"internal")
 		self.assertEqual(self.builder.packages[""].classes["MyClass"].variables["PI"].isConstant,True)
+	def testStaticClassField(self):
+		"Parse class static field."
+		self.builder.addSource(""" 
+		package 
+		{
+			class MyClass
+			{
+				static var count:int;
+			}
+		}
+		""")
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].variables["count"].name,"count")
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].variables["count"].type,"int")
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].variables["count"].visibility,"internal")
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].variables["count"].isConstant,False)
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].variables["count"].isStatic,True)
 	def testFieldModifiers(self):
 		"Parse field modifiers"
 		self.builder.addSource(""" 
@@ -436,32 +452,26 @@ class ASFieldTestCase(BaseTestCase):
 		{
 		        class MyClass
 			{
-				var iVar:String;
 				public var name:String;
 				private var age:int;
 				protected var salary:Number;
-				static var count:int; 
 			}
 		}
 		""")
-		#test for valid package
-		self.assertEqual(self.builder.hasPackage(""),True,"Unnamed package not found in testFieldModifiers")
-		#get unnamed package
-		pkg = self.builder.getPackage("")
-		#test that a class has been declared
-		self.assertEqual(pkg.hasClass("MyClass"),True,"Package does not have one or more classes defined")
-		# get class 'MyClass'
-		cls = pkg.getClass("MyClass")
-		#test for 'internal' field modifier
-		self.assertEqual(cls.getField("iVar").hasModifier("internal"),True,"Unable to parse 'internal' field modifier")
-		#test for 'public' field modifier
-		self.assertEqual(cls.getField("name").hasModifier("public"),True,"Unable to parse 'public' field modifier")
-		#test for 'private' field modifier
-		self.assertEqual(cls.getField("age").hasModifier("private"),True,"Unable to parse 'private' field modifier")
-		#test for 'protected' field modifier
-		self.assertEqual(cls.getField("salary").hasModifier("protected"),True,"Unable to parse 'protected' field modifier")
-		#test for 'static' field modifier
-		self.assertEqual(cls.getField("count").hasModifier("static"),True,"Unable to parse 'static' field modifier")
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].name,"MyClass")
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].visibility,"internal")
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].variables["name"].name,"name")
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].variables["name"].type,"String")
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].variables["name"].visibility,"public")
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].variables["name"].isConstant,False)
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].variables["age"].name,"age")
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].variables["age"].type,"int")
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].variables["age"].visibility,"private")
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].variables["age"].isConstant,False)
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].variables["salary"].name,"salary")
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].variables["salary"].type,"Number")
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].variables["salary"].visibility,"protected")
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].variables["salary"].isConstant,False)
 	def testFieldInitialization(self):
 		"Parse field initialization"
 		self.builder.addSource(""" 
@@ -477,14 +487,28 @@ class ASFieldTestCase(BaseTestCase):
 			}
 		}
 		""")
-		#test for valid package
-		self.assertEqual(self.builder.hasPackage(""),True,"Unnamed package not found in testFieldModifiers")
-		#get unnamed package
-		pkg = self.builder.getPackage("")
-		#test that a class has been declared
-		self.assertEqual(pkg.hasClass("MyClass"),True,"Package does not have one or more classes defined")
-		# get class 'MyClass'
-		cls = pkg.getClass("MyClass")
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].name,"MyClass")
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].visibility,"internal")
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].variables["name"].name,"name")
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].variables["name"].type,"String")
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].variables["name"].visibility,"internal")
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].variables["name"].isConstant,False)
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].variables["age"].name,"age")
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].variables["age"].type,"int")
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].variables["age"].visibility,"internal")
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].variables["age"].isConstant,False)
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].variables["salary"].name,"salary")
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].variables["salary"].type,"Number")
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].variables["salary"].visibility,"internal")
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].variables["salary"].isConstant,False)
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].variables["isSmart"].name,"isSmart")
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].variables["isSmart"].type,"Boolean")
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].variables["isSmart"].visibility,"internal")
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].variables["isSmart"].isConstant,False)
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].variables["_labelPlacement"].name,"_labelPlacement")
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].variables["_labelPlacement"].type,"String")
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].variables["_labelPlacement"].visibility,"internal")
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].variables["_labelPlacement"].isConstant,False)
 	def testFieldNamespaceModifier(self):
 		"Parse class namespace modifier"
 		self.builder.addSource(""" 
@@ -492,46 +516,16 @@ class ASFieldTestCase(BaseTestCase):
 		{
 		        class MyClass
 			{ 
-				mx_internal var mx:String;
+				mx_internal var name:String;
 			}
 		}
 		""")
-		#test for valid package
-		self.assertEqual(self.builder.hasPackage(""),True,"Unnamed package not found in testFieldModifiers")
-		#get unnamed package
-		pkg = self.builder.getPackage("")
-		#test that a class has been declared
-		self.assertEqual(pkg.hasClass("MyClass"),True,"Package does not have one or more classes defined")
-		# get class 'MyClass'
-		cls = pkg.getClass("MyClass")
-		#test for 'user_defined_namespace' field modifier
-		self.assertEqual(cls.getField("mx").hasModifier("mx_internal"),True,"Unable to parse user defined namespace 'mx_internal'")	
-	def testJavaDocWithClassFields(self):
-		"Parse JavaDoc with class Fields"
-		self.builder.addSource(""" 
-		package
-		{
-		         /**
-			  *  @private
-			  *  Timer for doing auto-repeat.
-		         */
-		        class MyClass
-			{ 
-				mx_internal var mx:String;
-			}
-		}
-		""")
-		#test for valid package
-		#self.assertEqual(self.builder.hasPackage(""),True,"Unnamed package not found in testFieldModifiers")
-		#get unnamed package
-		#pkg = self.builder.getPackage("")
-		#test that a class has been declared
-		#self.assertEqual(pkg.hasClass("MyClass"),True,"Package does not have one or more classes defined")
-		# get class 'MyClass'
-		#cls = pkg.getClass("MyClass")
-		#test for JavaDocs with class fields
-		#self.assertEqual()
-	
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].name,"MyClass")
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].visibility,"internal")
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].variables["name"].name,"name")
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].variables["name"].type,"String")
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].variables["name"].visibility,"mx_internal")
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].variables["name"].isConstant,False)	
 	def testMetaDataWithClassFields(self):
 		"Parse class Fields with metadata"
 		self.builder.addSource(""" 
@@ -540,20 +534,18 @@ class ASFieldTestCase(BaseTestCase):
 		        class MyClass
 			{ 
 			        [Bindable]
-				mx_internal var mx:String;
+				mx_internal var name:String;
 			}
 		}
 		""")
-				#test for valid package
-		#self.assertEqual(self.builder.hasPackage(""),True,"Unnamed package not found in testFieldModifiers")
-		#get unnamed package
-		#pkg = self.builder.getPackage("")
-		#test that a class has been declared
-		#self.assertEqual(pkg.hasClass("MyClass"),True,"Package does not have one or more classes defined")
-		# get class 'MyClass'
-		#cls = pkg.getClass("MyClass")
-		#test for Metadata with class fields
-		#self.assertEqual()
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].name,"MyClass")
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].visibility,"internal")
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].variables["name"].name,"name")
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].variables["name"].type,"String")
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].variables["name"].visibility,"mx_internal")
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].variables["name"].isConstant,False)
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].variables["name"].metadata[0].name,"Bindable")
+		self.assertEqual(self.builder.packages[""].classes["MyClass"].variables["name"].metadata[0].params,{})
 class ASMethodTestCase(BaseTestCase):
 	"Test cases for class methods"
 	def testConstructorMethod(self):
