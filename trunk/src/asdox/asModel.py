@@ -38,20 +38,9 @@ class ASType:
 	"Actionscript 3 Type"
 	name = "";
 	type = "";
-	__isString = False
 	def __init__(self,name,type):
 		self.name = name
 		self.type = type
-		if type == "String":
-			self.__isString = True
-		else:
-			self.__isString = False
-	def setter(self, value):
-		if value == "String":
-			self.__isString = True
-	def getter(self):
-		return self.__isString
-	isString = property(getter, setter)
 class ASProperty(ASType,Visible,MetaTagable):
 	"Actionscript getter/setter"
 	readable = False
