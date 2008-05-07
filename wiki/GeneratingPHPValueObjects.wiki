@@ -59,51 +59,59 @@ package com.gurufaction.myApp
 }
 """)
 
-pkg = builder.getPackage("com.gurufaction.myApp")
+pkg = builder.packages["com.gurufaction.myApp"]
 
 template = """
 <?php
 
-class $cls.getName()
+class $cls.name
 {
-	#for $name in $cls.getGetters().values()
-	var $$name.getName().lower();
+	#for $property in $cls.properties.values()
+	var $$property.name.lower();
 	#end for
 	
-	function $cls.getName()()
+	function ${cls.name}()
 	{
 	}
 	
-	#for $meth in $cls.getGetters().values()
-	function get$meth.getName()()
+	#for $property in $cls.properties.values()
+        #if $property.visibility == "public"
+        #if $property.readable
+        function get${property.name}()
 	{
-		return #raw$this->#end raw$meth.getName().lower();
+		return #raw$this->#end raw$property.name.lower();
 	}
-	
-	#if $cls.hasSetter($meth.getName())
-	function set$meth.getName()(${meth.getName().lower()}In)
+        #end if
+        
+        #if $property.writable
+        function set${property.name}()(${property.name.lower()}In)
 	{
-		#raw$this->#end raw$meth.getName().lower() = ${meth.getName().lower()}In;
+		#raw$this->#end raw$property.name.lower() = ${property.name.lower()}In;
 	}
-	#end if
+        #end if
+        #end if
 	#end for
         
         function hasEqualMapping(#raw$valueObject#end raw)
         {
-        	#for $name in $cls.getGetters().values()
-                if (#raw$valueObject#end raw.get${name.getName()}() != #raw$this->#end raw$name.getName().lower()) 
+        	#for $property in $cls.properties.values()
+                #if $property.readable
+                if (#raw$valueObject#end raw.get${property.name}() != #raw$this->#end raw$property.name.lower()) 
                 {
                     return(false);
                 }
+                #end if
                 #end for
         	return true;
         }
         
         function clone()
         {
-        	#raw$clone #end raw = new $cls.getName()();
-                #for $name in $cls.getSetters().values()
-                #raw$clone#end raw->set${name.getName()}(#raw$this->#end raw$name.getName().lower());
+        	#raw$clone #end raw = new ${cls.name}();
+                #for $property in $cls.properties.values()
+                #if $property.writable
+                #raw$clone#end raw->set${property.name}(#raw$this->#end raw$property.name.lower());
+                #end if
                 #end for
                 return #raw$clone#end raw;
         }
@@ -111,9 +119,11 @@ class $cls.getName()
         function toString()
         {
         	#raw$out#end raw = "";
-                #raw$out = $out #end raw . "$cls.getName()\\n";
-        	#for $name in $cls.getGetters().values()
-                #raw$out = $out #end raw . "${name.getName()}: " . #raw$this->#end rawget${name.getName()}() . "\\n";
+                #raw$out = $out #end raw . "$cls.name\\n";
+        	#for $property in $cls.properties.values()
+                #if $property.readable
+                #raw$out = $out #end raw . "${property.name}: " . #raw$this->#end rawget${property.name}() . "\\n";
+                #end if
                 #end for
                 return #raw$out#end raw
         }
@@ -121,17 +131,20 @@ class $cls.getName()
         function toXML()
         {
         	#raw$out#end raw = "";
-                #raw$out = $out .#end raw "<$cls.getName()>";
-        	#for $name in $cls.getGetters().values()
-                #raw$out = $out .#end raw "<${name.getName()}>" . #raw$this->#end rawget${name.getName()}() . "</${name.getName()}>";
+                #raw$out = $out .#end raw "<$cls.name>";
+        	#for $property in $cls.properties.values()
+                #if $property.readable
+                #raw$out = $out .#end raw "<${property.name}>" . #raw$this->#end rawget${property.name}() . "</${property.name}>";
+                #end if
                 #end for
-                #raw$out = $out .#end raw "</$cls.getName()>";
+                #raw$out = $out .#end raw "</$cls.name>";
                 return #raw$out#end raw
         }
 }
 ?>
 """
-nameSpace = {'cls': pkg.getClass("Person")}
+
+nameSpace = {'cls': pkg.classes["Person"]}
 t = Template(template, searchList=[nameSpace])
 print t
 }}}
