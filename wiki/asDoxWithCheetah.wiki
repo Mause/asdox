@@ -41,24 +41,30 @@ package com.gurufaction.myApp
 }
 """)
 
-pkg = builder.getPackage("com.gurufaction.myApp")
+pkg = builder.packages["com.gurufaction.myApp"]
 
 c_sharp_template = """
 using System;
 
-namespace $pkg.getName()
+namespace $pkg.name
 {
-	#for $key,$cls in $pkg.getClasses().items()
-        #if $cls.hasModifier("public")
-        public class $cls.getName()
+	#for $key,$cls in $pkg.classes.items()
+        #if $cls.visibility == "public"
+        public class $cls.name
         {
-        	#for $key,$value in $cls.getGetters().items()
-                #if $value.hasModifier("public")
-                public $value.getType() $value.getName()
+        	#for $key,$value in $cls.properties.items()
+                private $value.type _$value.name.lower();
+                #end for
+                
+        	#for $key,$value in $cls.properties.items()
+                #if $value.visibility == "public"
+                public $value.type $value.name
                 {
-                        get { return _$value.getName().lower(); }
-                        #if $cls.hasSetter($value.getName())
-                        set {  _$value.getName().lower() = value; }   
+                	#if $value.readable
+                        get { return _$value.name.lower(); }
+                        #end if
+                        #if $value.writable
+                        set { _$value.name.lower() = value; }   
                         #end if
                 }
                 
