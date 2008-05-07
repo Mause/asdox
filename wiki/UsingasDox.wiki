@@ -36,7 +36,7 @@ builder.addSource(f)
 
 ==Navigating the Model==
 
-Once all of your source files have been added to the Builder class you can begin navigating the model. The model consist of a heriachy of objects that represent an Actionscript source file:
+Once all of your source files have been added to the Builder class you can begin navigating the model. The model consist of a hierarchy of objects that represent an Actionscript source file:
 
   * Package
     * Metadata
@@ -45,57 +45,51 @@ Once all of your source files have been added to the Builder class you can begin
       * Fields/Methods
 
 
-The Builder class has several methods to help you access package information. You can test for the existance of a package by calling the `hasPackage()` method. This method returns True if the package exist and False otherwise.
+The Builder class stores package information is a dictionary named `packages`. You can access individual packages using Pythons dictionary notation.
 
 {{{
-builder.hasPackage("com.googlecode.asdox")
+pkg = builder.packages["com.googlecode.asdox"]
 }}}
 
-Once you have determined that the package exists you can use the `getPackage()` method of the Builder class to get that package from the model.
+If you don't know the name of the package or if your model contains several packages you can use the `packages` property of the Builder class to get all packages contained in the model. This property returns a dictionary of packages with the key being the package name.
 
 {{{
-pkg = builder.getPackage("com.goolecode.asdox")
-}}}
-
-If you don't know the name of the package or if your model contains several packages you can use the `getPackages()` method of the Builder class to get all packages contained in the model. This method returns a dictionary of packages with the key being the package name.
-
-{{{
-allPkgs = builder.getPackages()
-for pkg in allPkgs.keys():
+for pkg in builder.packages.keys():
 	print pkg
 }}}
 
 ===Exploring Packages===
 
-The Package object contains methods for accessing import and class information. If you want to test for the existence of an import statement you can use the `hasImport()` method of the Package class. This method returns True if the specified import statement exist within the package.
+The Package object contains methods for accessing import and class information. If you want to test for the existence of an import statement you can use Python's build in set methods.
 
 {{{
-pkg.hasImport("mx.controls")
+if( "mx.controls" in pkg.imports ):
+        print "mx.controls import found!"
 }}}
 
-You can also retrieve a list of all imports using the `getImports()` method of the Package class. This method returns a `set()` containing all the import statements.
+You can also retrieve a list of all imports using the `imports` property of the Package class. This property returns a `set()` containing all the import statements.
 
 {{{
-for stmt in pkg.getImports():
+for stmt in pkg.imports:
 	print stmt
 }}}
 
-Accessing class information is similar to accessing import information. You can test for the existence of a class using the `hasClass()` method.
+Accessing class information is similar to accessing import information. You can test for the existence of a class using Python's built in dictionary methods.
 
 {{{
-pkg.hasClass("MyClass")
+if( "MyClass" in pkg.classes ):
+       print pkg.classes["MyClass"].name
 }}}
 
-To get a specific class from a package you use the `getClass()` method passing in the class name as an argument.
+Or you can access a specific class directly
 
 {{{
-cls = pkg.getClass("MyClass")
+cls = pkg.classes["MyClass"]
 }}}
 
-As with imports you can get retrieve all classes in a package using the `getClasses()` method.
+As with imports you can get retrieve all classes in a package using the `classes` property.
 
 {{{
-allClasses = pkg.getClasses()
-for cls in allClasses.keys():
+for cls in pkg.classes.keys():
        print cls
 }}}
