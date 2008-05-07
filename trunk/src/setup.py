@@ -21,7 +21,7 @@ except ImportError:
     kw = {}
 
 setup(name = "asdox",
-      version = "2.0.0-alpha",
+      version = "1.0.0-alpha2",
       description = "Actionscript 3 Parser",
       author = "Michael Ramirez",
       author_email = "michael_ramirez44@yahoo.com",
@@ -30,7 +30,7 @@ setup(name = "asdox",
       download_url = 'http://code.google.com/p/asdox/downloads/list',
       license = 'New BSD License',
       platforms = 'All',
-      classifiers = [ 'Development Status :: 2.0.0 - Alpha',
+      classifiers = [ 'Development Status :: 1.0.0 - Alpha 2',
                       'Intended Audience :: Developers',
                       'License :: OSI Approved :: New BSD License',
                       'Operating System :: OS Independent'],
