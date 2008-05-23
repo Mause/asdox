@@ -706,11 +706,12 @@ class ASMethodTestCase(BaseTestCase):
 		}
 		""")
 		
-		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].properties["labelPlacement"].name,"labelPlacement")
-		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].properties["labelPlacement"].type,"String")
-		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].properties["labelPlacement"].visibility,"public")
-		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].properties["labelPlacement"].readable,True)
-		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].properties["labelPlacement"].writable,False)
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].variables["labelPlacement"].name,"labelPlacement")
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].variables["labelPlacement"].type,"String")
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].variables["labelPlacement"].visibility,"public")
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].variables["labelPlacement"].readable,True)
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].variables["labelPlacement"].writable,False)
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].variables["labelPlacement"].isProperty,True)
 	def testMethodSetter(self):
 		"Parse class method with setter."
 		self.builder.addSource("""
@@ -726,11 +727,12 @@ class ASMethodTestCase(BaseTestCase):
 		}
 		""")
 		
-		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].properties["labelPlacement"].name,"labelPlacement")
-		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].properties["labelPlacement"].type,"String")
-		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].properties["labelPlacement"].visibility,"public")
-		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].properties["labelPlacement"].readable,False)
-		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].properties["labelPlacement"].writable,True)
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].variables["labelPlacement"].name,"labelPlacement")
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].variables["labelPlacement"].type,"String")
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].variables["labelPlacement"].visibility,"public")
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].variables["labelPlacement"].readable,False)
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].variables["labelPlacement"].writable,True)
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].variables["labelPlacement"].isProperty,True)
 	def testMethodGetterAndSetter(self):
 		"Parse class method with setter and getter."
 		self.builder.addSource("""
@@ -751,11 +753,12 @@ class ASMethodTestCase(BaseTestCase):
 		}
 		""")
 		
-		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].properties["name"].name,"name")
-		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].properties["name"].type,"String")
-		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].properties["name"].visibility,"public")
-		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].properties["name"].readable,True)
-		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].properties["name"].writable,True)
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].variables["name"].name,"name")
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].variables["name"].type,"String")
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].variables["name"].visibility,"public")
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].variables["name"].readable,True)
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].variables["name"].writable,True)
+		self.assertEqual(self.builder.packages["com.gurufaction.asdox"].classes["MyClass"].variables["name"].isProperty,True)
 	def testMethodNamespace(self):
 		"Parse class method with namespace."
 		self.builder.addSource("""
