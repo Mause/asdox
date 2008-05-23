@@ -41,23 +41,19 @@ class ASType:
 	def __init__(self,name,type):
 		self.name = name
 		self.type = type
-class ASProperty(ASType,Visible,MetaTagable):
-	"Actionscript getter/setter"
-	readable = False
-	writable = False
-	def __init__(self, name = "", type = "*"):
-		self.name = name
-		self.type = type
-		self.metadata = []
-		self.readable = False
-		self.writable = False
 class ASVariable(ASType,Visible,MetaTagable):
 	"Actionscript 3 Variable"
+	isStatic = False
+	isConstant = False
+	readable = False
+	writable = False
+	isProperty = False
 	def __init__(self, name = "", type = "*"):
 		ASType.__init__(self,name,type)
 		self.metadata = []
-	isStatic = False
-	isConstant = False
+		self.readable = False
+		self.writable = False
+		self.isProperty = False
 class ASMetaTag:
 	"Actionscript MetaTag Definition"
 	params = dict()
@@ -70,7 +66,6 @@ class ASClass(Visible,MetaTagable):
 	name = ""
 	variables = dict()
 	methods = dict()
-	properties = dict()
 	extends = ""
 	implements = []
 	isDynamic = False
@@ -81,7 +76,6 @@ class ASClass(Visible,MetaTagable):
 		self.metadata = []
 		self.variables = dict()
 		self.methods = dict()
-		self.properties = dict()
 		self.extends = ""
 		self.implements = []
 		self.isDynamic = False
