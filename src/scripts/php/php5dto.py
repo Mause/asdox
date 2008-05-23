@@ -27,19 +27,18 @@ for pkg in builder.packages.values():
         tmp = asModel.ASClass()
         tmp.objects = dict()
         tmp.collections = dict()
+        tmp.properties = dict()
         tmp.name = cls.name
 
-        for prop in cls.properties.values():
-            if prop.visibility == "public" and prop.type in initMap:
-                prop.capitalize = prop.name.capitalize()
-                prop.init = initMap[prop.type]
-                tmp.properties[prop.name] = prop
         for var in cls.variables.values():
             if var.visibility == "public":
                 var.capitalize = var.name.capitalize()
                 if var.type in initMap:
                     var.init = initMap[var.type]
-                    tmp.variables[var.name] = var
+                    if var.isProperty:
+                        tmp.properties[var.name] = var
+                    else:
+                        tmp.variables[var.name] = var
                 else:
                     for meta in var.metadata:
                         if meta.name == "ValueObject":
