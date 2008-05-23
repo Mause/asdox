@@ -88,26 +88,27 @@ def parseASMethod(s,l,t):
 	for arg in args:
 	    meth.arguments[arg.name] =  arg
     if t.accessor:
-	if package.classes[class_name].properties.has_key(meth.name) == False:
-	    package.classes[class_name].properties[meth.name] = ASProperty(meth.name,meth.type)
+	if package.classes[class_name].variables.has_key(meth.name) == False:
+	    package.classes[class_name].variables[meth.name] = ASVariable(meth.name,meth.type)
 	
 	if t.accessor == "get":
-	    package.classes[class_name].properties[meth.name].readable = True
-	    package.classes[class_name].properties[meth.name].type = meth.type
+	    package.classes[class_name].variables[meth.name].readable = True
+	    package.classes[class_name].variables[meth.name].type = meth.type
 	if t.accessor == "set":
-	    package.classes[class_name].properties[meth.name].writable = True
+	    package.classes[class_name].variables[meth.name].writable = True
 	    for arg in meth.arguments.values():
-		package.classes[class_name].properties[meth.name].type = arg.type
+		package.classes[class_name].variables[meth.name].type = arg.type
 	while metatags:
 	    tag = metatags.pop()
-	    package.classes[class_name].properties[meth.name].metadata.append(tag)
-	package.classes[class_name].properties[meth.name].visibility = t.visibility
+	    package.classes[class_name].variables[meth.name].metadata.append(tag)
+	package.classes[class_name].variables[meth.name].visibility = t.visibility
+	package.classes[class_name].variables[meth.name].isProperty = True
 	if t.override:
-	    package.classes[class_name].properties[meth.name].isOverride = True
+	    package.classes[class_name].variables[meth.name].isOverride = True
 	if t.final:
-	    package.classes[class_name].properties[meth.name].isFinal = True
+	    package.classes[class_name].variables[meth.name].isFinal = True
 	if t.static:
-	    package.classes[class_name].properties[meth.name].isStatic = True
+	    package.classes[class_name].variables[meth.name].isStatic = True
     else:
 	package.classes[class_name].methods[meth.name] = meth
 	while metatags:
@@ -125,6 +126,8 @@ def parseASVariable(s,l,t):
     if t.static == "static":
 	var.isStatic = True
     package.classes[class_name].variables[var.name] = var
+    package.classes[class_name].variables[var.name].readable = True
+    package.classes[class_name].variables[var.name].writable = True
     while metatags:
 	tag= metatags.pop()
 	package.classes[class_name].variables[var.name].metadata.append(tag)
