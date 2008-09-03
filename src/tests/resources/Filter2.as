@@ -9,18 +9,18 @@ package com.franklinconnections
 	// Import Statements
 	import mx.collections.ArrayCollection;
 	import mx.controls.Alert;
-	import com.foo2;
+	import com.foo3;
 	/***
 	*
 	* Filter class
 	*
 	****/
-	public class Filter
+	public class Filter2
 	{
 		public var name:String;
 		public var children:ArrayCollection;
 		
-		public function Filter(_name:String)
+		public function Filter2(_name:String)
 		{
 			name = _name;
 			children = new ArrayCollection();

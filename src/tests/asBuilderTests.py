@@ -357,7 +357,8 @@ class ParsingExternalFileTestCase(BaseTestCase):
 	def testFilterClassFile(self):
 		"Load and Parse Filter.as source file."
 		self.builder.addSource("resources/Filter.as")
-		self.assertEqual(self.builder.packages["com.franklinconnections"].imports,['mx.collections.ArrayCollection', 'mx.controls.Alert'])
+		self.builder.addSource("resources/Filter2.as")
+		self.assertEqual(self.builder.packages["com.franklinconnections"].imports,['mx.collections.ArrayCollection', 'mx.controls.Alert','com.foo2','com.foo3'])
 		self.assertEqual(self.builder.packages["com.franklinconnections"].classes["Filter"].name,"Filter")
 	def testButtonClassFile(self):
 		"Load and Parse Button.as source file."
