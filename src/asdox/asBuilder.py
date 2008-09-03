@@ -24,7 +24,7 @@
 # LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-import asGrammar,os,fnmatch,asModel
+import asGrammar,os,fnmatch,asModel,codecs
 
 class Builder:
 	"Actionscript Source Builder"
@@ -40,20 +40,20 @@ class Builder:
 				self.parseSource( source.read() )
 			except:
 				# If 'source' is a filename open and read file.
-				self.parseSource( open(source,"rb").read() )
+				self.parseSource( open(source,"r").read() )
 		except IOError:
 			# If 'source' is a directory read all files matching the
 			# specified pattern.
 			if os.path.isdir( source ):
 				files = self.locate(pattern,source)
 				for f in files:
-					self.parseSource( open(f).read() )
+					self.parseSource( open(f,"r").read() )
 			else:
 				# If 'source' is a string append to source list
 				self.parseSource( source )
 	def parseSource(self,src):
 		self.sources.append( src )
-		asGrammar.PROGRAM.parseString(src)
+		asGrammar.PROGRAM.parseString(src.decode("ascii","ignore"))
 		pkg = asGrammar.package
 		asGrammar.package = asModel.ASPackage()
 		
