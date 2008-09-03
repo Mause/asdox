@@ -58,7 +58,9 @@ class Builder:
 		asGrammar.package = asModel.ASPackage()
 		
 		if pkg.name in self.packages:
-			
+			for imp in pkg.imports:
+				if imp not in self.packages[pkg.name].imports:
+					self.packages[pkg.name].imports.append(imp)
 			for cls in pkg.classes.values():
 				self.packages[pkg.name].classes[cls.name] = cls
 		else:
