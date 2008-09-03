@@ -364,6 +364,10 @@ class ParsingExternalFileTestCase(BaseTestCase):
 		"Load and Parse Button.as source file."
 		self.builder.addSource("resources/Button.as")
 		self.assertEqual(self.builder.packages["mx.controls"].classes["Button"].name,"Button")
+	def testUTF8ClassFile(self):
+		"Load and Parse UTF-8 source file."
+		self.builder.addSource("resources/mx/utils/StringUtil.as")
+		self.assertEqual(self.builder.packages["mx.utils"].classes["StringUtil"].name,"StringUtil")
 class BuilderTestCase(BaseTestCase):		
 	def testMultipleSources(self):
 		"Parse multiple source files."
